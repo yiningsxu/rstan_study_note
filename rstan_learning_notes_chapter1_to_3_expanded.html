@@ -1,0 +1,2342 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="" />
+  <meta name="dcterms.date" content="2026-06-05" />
+  <title>RStan学習ノート：Chapter 1〜3（Chapter 3詳細版）</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="/usr/share/javascript/mathjax/MathJax.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">RStan学習ノート：Chapter 1〜3（Chapter 3詳細版）</h1>
+<p class="author"></p>
+<p class="date">2026-06-05</p>
+</header>
+<h1 id="rstan学習ノートchapter-13">RStan学習ノート：Chapter 1〜3</h1>
+<p>本ノートは、RStan公式リファレンス、Stan Reference Manual、Stan User’s
+Guideを確認した上で、RStanを用いた統計モデリングの導入から基本的な回帰モデルの実装までをまとめたものです。Chapter
+3では、感染症分野で実際に頻出するデータ構造を意識したサンプルデータとRStanコードを提示します。サンプルデータは再現可能なシミュレーションデータであり、実患者データではありません。今回の詳細版では、回帰モデルの数式の仕組み、出力結果の実務的解釈、Stanコードのブロック別意図を追加しています。</p>
+<p>参照した主な公式資料は、<a
+href="https://mc-stan.org/rstan/reference/rstan.html">RStan
+Reference</a>、<a
+href="https://mc-stan.org/rstan/reference/stan.html">RStan
+<code>stan()</code> Reference</a>、<a
+href="https://mc-stan.org/docs/reference-manual/">Stan Reference
+Manual</a>、<a href="https://mc-stan.org/docs/stan-users-guide/">Stan
+User’s Guide</a>、<a
+href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan
+Diagnostics and Warnings</a>です。</p>
+<h2 id="目次">目次</h2>
+<ul>
+<li><a href="#chapter-1統計モデリングとstanの概要">Chapter
+1　統計モデリングとStanの概要</a>
+<ul>
+<li><a href="#11統計モデリングとは">1.1　統計モデリングとは</a></li>
+<li><a href="#12統計モデリングの目的">1.2　統計モデリングの目的</a></li>
+<li><a
+href="#13確率的プログラミング言語">1.3　確率的プログラミング言語</a></li>
+<li><a href="#14なぜstanなのか">1.4　なぜStanなのか？</a></li>
+<li><a href="#15なぜrstanなのか">1.5　なぜRStanなのか？</a></li>
+<li><a href="#chapter-1補足と文献案内">補足と文献案内</a></li>
+</ul></li>
+<li><a href="#chapter-2stanとrstanをはじめよう">Chapter
+2　StanとRStanをはじめよう</a>
+<ul>
+<li><a href="#41stanとrstanの準備">4.1　StanとRStanの準備</a></li>
+<li><a href="#42stanの基本的な文法">4.2　Stanの基本的な文法</a></li>
+<li><a href="#chapter-2補足と文献案内">補足と文献案内</a></li>
+</ul></li>
+<li><a href="#chapter-3基本的な回帰とモデルのチェック">Chapter
+3　基本的な回帰とモデルのチェック</a>
+<ul>
+<li><a href="#51単回帰">5.1　単回帰</a></li>
+<li><a href="#52重回帰">5.2　重回帰</a></li>
+<li><a
+href="#53二項ロジスティック回帰">5.3　二項ロジスティック回帰</a></li>
+<li><a href="#54ロジスティック回帰">5.4　ロジスティック回帰</a></li>
+<li><a href="#55ポアソン回帰">5.5　ポアソン回帰</a></li>
+<li><a href="#chapter-3補足と文献案内">補足と文献案内</a></li>
+</ul></li>
+</ul>
+<hr />
+<h1 id="chapter-1-統計モデリングとstanの概要">Chapter
+1　統計モデリングとStanの概要</h1>
+<h2 id="この章の到達目標">この章の到達目標</h2>
+<p>この章の目的は、RStanの使い方に入る前に、そもそも<strong>統計モデリングとは何か</strong>、<strong>Stanは何をする言語なのか</strong>、<strong>RStanはStanをRからどう使えるようにするのか</strong>を整理することです。</p>
+<p>Stan Reference
+Manualは、Stanを「確率モデルをコード化するためのプログラミング言語、モデルを当てはめ予測するための推論アルゴリズム、結果を評価するための事後解析ツール」を扱う体系として位置づけています。RStanは、そのStanをRから使うためのインターフェースです。</p>
+<p>この章では、次の考え方を順に確認します。</p>
+<ol type="1">
+<li>統計モデルとは、観測データを確率的に説明するための仮定体系である。</li>
+<li>統計モデリングの目的は、推定だけでなく、予測、説明、不確実性評価、モデルチェック、意思決定支援まで含む。</li>
+<li>Stanは、統計モデルをプログラムとして書き、その対数密度に基づいて推論する確率的プログラミング言語である。</li>
+<li>RStanは、StanモデルをRからコンパイル・実行・要約するためのインターフェースである。</li>
+</ol>
+<h2 id="統計モデリングとは">1.1　統計モデリングとは</h2>
+<h3
+id="統計モデルの基本的な考え方">1.1.1　統計モデルの基本的な考え方</h3>
+<p><strong>統計モデリング</strong>とは、観測されたデータがどのような確率的仕組みによって生じたのかを、数式やプログラムで表現する作業です。たとえば、身長、売上、クリック率、故障件数、感染者数、顧客離脱、試験点数などのデータに対して、次のような問いを扱います。</p>
+<ul>
+<li>このデータはどのような確率分布から発生したと考えるのが妥当か。</li>
+<li>どの変数が結果に影響しているのか。</li>
+<li>未知の量をどの程度の不確実性で推定できるのか。</li>
+<li>まだ観測されていない将来の値をどの程度予測できるのか。</li>
+</ul>
+<p>統計モデルでは、通常、次の3つを区別します。</p>
+<p><strong>観測データ</strong><br />
+すでに観測された値です。Stanでは主に<code>data</code>ブロックに入ります。たとえば、観測数<code>N</code>、応答変数<code>y</code>、説明変数<code>x</code>などです。</p>
+<p><strong>未知パラメータ</strong><br />
+データから推定したい量です。平均、分散、回帰係数、階層モデルの群間ばらつき、潜在変数などが含まれます。Stanでは主に<code>parameters</code>ブロックに書きます。</p>
+<p><strong>確率構造</strong><br />
+データとパラメータの関係を確率分布で書いたものです。たとえば、<code>y ~ normal(mu, sigma)</code>は「観測値<code>y</code>は平均<code>mu</code>、標準偏差<code>sigma</code>の正規分布に従う」という仮定を表します。ただしStanの<code>~</code>記法は、乱数を発生させる命令ではなく、モデルの対数密度に項を追加するための記法です。</p>
+<h3
+id="統計モデルは真実ではなく仮定の明示">1.1.2　統計モデルは「真実」ではなく「仮定の明示」</h3>
+<p>統計モデルは現実そのものではなく、現実を分析可能な形に簡略化した<strong>仮定の集合</strong>です。モデルは、現実の全要素を完全に再現するものではありません。むしろ、分析目的に照らして重要な構造を取り出し、不確実性を含めて表現するための道具です。</p>
+<p>たとえば、正規分布モデル</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>y ~ normal(mu, sigma);</span></code></pre></div>
+<p>は、「データのばらつきは正規分布で近似できる」という仮定を置いています。この仮定が妥当かどうかは、推定後に残差、事後予測、モデル比較、外部データでの予測性能などを通じて検討します。</p>
+<p>Stan User’s
+Guideには、回帰モデル、時系列モデル、欠測データ、打ち切り・切断データ、混合モデル、測定誤差、ガウス過程、ODE、サバイバルモデルなど、多様なモデル例が含まれています。これは、統計モデリングが単なる「回帰分析」だけではなく、データ生成過程を明示的に記述する広い枠組みであることを示しています。</p>
+<h3
+id="ベイズ統計における統計モデル">1.1.3　ベイズ統計における統計モデル</h3>
+<p>Stanはベイズ推論に強いツールです。ベイズ統計では、未知パラメータを固定された未知量として扱いつつ、その不確実性を確率分布で表します。基本形は次のようになります。</p>
+<p>[ p(y) p(y )p() ]</p>
+<p>ここで、()は未知パラメータ、(y)は観測データです。</p>
+<p><strong>尤度 (p(y ))</strong>
+は、パラメータが与えられたときに観測データがどれくらい起こりやすいかを表します。</p>
+<p><strong>事前分布 (p())</strong>
+は、データを見る前にパラメータについて持っている知識や制約を表します。</p>
+<p><strong>事後分布 (p(y))</strong>
+は、データを観測した後のパラメータの不確実性を表します。</p>
+<p>Stan言語は、データで条件づけられた対数密度関数を定義します。ベイズモデルでは、この対数密度は典型的には事後分布に比例する非正規化対数密度です。</p>
+<h3 id="最小例正規分布モデル">1.1.4　最小例：正規分布モデル</h3>
+<p>観測値<code>y</code>が正規分布に従うと仮定し、平均<code>mu</code>と標準偏差<code>sigma</code>を推定するモデルは、Stanでは次のように書けます。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; N;</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] y;</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  mu ~ normal(<span class="dv">0</span>, <span class="dv">10</span>);</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  sigma ~ exponential(<span class="dv">1</span>);</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  y ~ normal(mu, sigma);</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>このモデルでは、<code>data</code>ブロックがRから渡される観測データ、<code>parameters</code>ブロックが推定対象、<code>model</code>ブロックが事前分布と尤度を定義しています。</p>
+<h2 id="統計モデリングの目的">1.2　統計モデリングの目的</h2>
+<h3 id="目的1未知量を推定する">1.2.1　目的1：未知量を推定する</h3>
+<p>統計モデリングの第一の目的は、観測データから未知の量を推定することです。たとえば、商品の平均購入金額、広告効果、薬剤効果、地域ごとのリスク、顧客の離脱確率、機械の故障率などです。</p>
+<p>頻度論的な推定では点推定値や信頼区間を使うことが多いですが、ベイズモデリングでは未知量の<strong>事後分布</strong>を直接扱います。これにより、「平均効果はどの程度か」だけでなく、「その効果が正である確率はどれくらいか」「実務上意味のある大きさを超える確率はどれくらいか」といった問いを表現しやすくなります。</p>
+<h3
+id="目的2不確実性を定量化する">1.2.2　目的2：不確実性を定量化する</h3>
+<p>統計モデリングでは、推定値そのものよりも、推定の不確実性が重要になることがあります。たとえば、2つの施策AとBの平均効果が近い場合、単に平均値だけを比較しても意思決定には不十分です。どの程度の確信を持ってAがBより良いと言えるのか、効果のばらつきはどれくらいか、最悪の場合にどの程度悪化しうるかを評価する必要があります。</p>
+<p>StanのMCMC出力では、各パラメータについて多数の事後ドローが得られます。RStanの<code>stanfit</code>オブジェクトは、Stanモデルのフィット結果を保持し、<code>print</code>、<code>plot</code>、<code>summary</code>などのメソッドで要約や診断情報を取り出せます。</p>
+<h3 id="目的3予測する">1.2.3　目的3：予測する</h3>
+<p>統計モデルは、まだ観測されていないデータの予測にも使います。ベイズモデルでは、パラメータの事後分布を通じて、予測値の不確実性も同時に扱えます。</p>
+<p>Stan User’s
+Guideでは、事後予測分布を「過去の観測データが与えられたときの新しい観測値の分布」として説明し、<code>generated quantities</code>ブロックを使って事後予測量を生成する方法を示しています。</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y_new;</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  y_new = normal_rng(mu, sigma);</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>この<code>y_new</code>の分布を見ることで、「次に観測される値はどの範囲に入りそうか」を評価できます。</p>
+<h3
+id="目的4モデルの妥当性を確認する">1.2.4　目的4：モデルの妥当性を確認する</h3>
+<p>統計モデルは作って終わりではありません。モデルがデータの重要な特徴を再現できているかを確認する必要があります。Stan
+User’s
+Guideでは、事後予測チェックを、フィット済みモデルのパラメータから複製データをシミュレーションし、その複製データと元データの統計量を比較する方法として説明しています。</p>
+<p>たとえば、モデルが平均はよく再現しているが外れ値の頻度を過小評価している場合、そのモデルは平均値の推定には使えても、リスク評価や異常検知には不適切かもしれません。統計モデリングでは、モデルの仮定、推定結果、予測性能、診断結果を総合的に見る必要があります。</p>
+<h3 id="目的5意思決定を支援する">1.2.5　目的5：意思決定を支援する</h3>
+<p>統計モデリングの最終目的は、多くの場合、意思決定です。意思決定には、単なる推定値ではなく、不確実性、リスク、コスト、便益、制約条件が関係します。たとえば、広告予算配分、医療介入、在庫管理、価格設定、品質管理などでは、「期待値が最大の選択肢」だけでなく、「失敗時の損失が許容範囲か」も考える必要があります。</p>
+<p>Stan User’s
+Guideには、事後予測サンプリング、シミュレーションベースのキャリブレーション、事後・事前予測チェック、ホールドアウト評価、クロスバリデーション、意思決定分析などが含まれています。</p>
+<h2 id="確率的プログラミング言語">1.3　確率的プログラミング言語</h2>
+<h3
+id="確率的プログラミング言語とは">1.3.1　確率的プログラミング言語とは</h3>
+<p><strong>確率的プログラミング言語</strong>とは、確率モデルをプログラムとして記述し、そのモデルに対して推論アルゴリズムを適用するための言語です。通常のプログラムが「入力から出力を計算する手続き」を書くのに対して、確率的プログラムでは「データがどのような確率構造から発生したか」を書きます。</p>
+<p>Stanの場合、ユーザーはモデルをStan言語で書きます。Stan言語は、確率モデルをコード化するためのプログラミング言語であり、データに条件づけられた対数密度関数を定義します。</p>
+<h3
+id="モデル記述と推論を分離する">1.3.2　モデル記述と推論を分離する</h3>
+<p>確率的プログラミングの大きな利点は、<strong>モデル記述</strong>と<strong>推論アルゴリズム</strong>をある程度分離できることです。ユーザーは、まずモデルを次のように書きます。</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; N;</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] y;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  mu ~ normal(<span class="dv">0</span>, <span class="dv">10</span>);</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  sigma ~ exponential(<span class="dv">1</span>);</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  y ~ normal(mu, sigma);</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>その後、Stanがこのモデルから対数密度と勾配を計算し、NUTS/HMCなどの推論アルゴリズムを用いてパラメータの事後分布を探索します。Stan
+Reference Manualでは、Stanで使われるMCMCアルゴリズムとしてHamiltonian
+Monte Carlo、HMC、およびその適応版であるNo-U-Turn
+Sampler、NUTSが説明されています。</p>
+<h3
+id="stanプログラムの基本ブロック">1.3.3　Stanプログラムの基本ブロック</h3>
+<p>Stanプログラムは、役割ごとにブロックを分けて書きます。主要ブロックは次の通りです。</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ユーザー定義関数</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 外部から渡されるデータ</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// データだけから計算できる定数や変換</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 推定対象の未知パラメータ</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">// パラメータから導かれる保存対象の量</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 事前分布と尤度、つまり対数密度</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 事後予測、派生量、乱数生成</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Stan公式リファレンスでは、<code>data</code>ブロックはモデルに必要なデータ、<code>parameters</code>ブロックはモデルのパラメータ、<code>model</code>ブロックは対数確率関数、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や乱数生成を扱う場所として説明されています。</p>
+<h3
+id="stanはサンプリング文を実行しているわけではない">1.3.4　Stanは「サンプリング文」を実行しているわけではない</h3>
+<p>Stanでは、次のような記法を使います。</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>y ~ normal(mu, sigma);</span></code></pre></div>
+<p>一見すると「<code>y</code>を正規分布からサンプリングする」ように見えますが、<code>model</code>ブロック内ではそうではありません。この記法は、モデルの対数密度に正規分布の対数確率を加えるための簡略記法です。</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">target +=</span> normal_lpdf(y | mu, sigma);</span></code></pre></div>
+<p>これはStanを理解する上で非常に重要です。Stanは、モデル中の分布文を使って<strong>非正規化事後密度</strong>を構成し、その密度に比例する分布からMCMCでサンプルを生成します。</p>
+<h3 id="stanで直接扱いにくいもの">1.3.5　Stanで直接扱いにくいもの</h3>
+<p>Stanは連続パラメータの推論に強く設計されています。一方で、Stanは離散パラメータを直接サンプリングしません。Stan
+User’s
+Guideでは、Stanは離散パラメータのサンプリングをサポートせず、離散潜在変数を含む多くのモデルでは周辺化によってStanで書ける形にする、と説明されています。</p>
+<p>たとえば、変化点モデル、潜在クラスモデル、HMM、混合モデルなどでは、離散状態をそのまま<code>parameters</code>ブロックに置くのではなく、可能な場合は<code>log_sum_exp</code>などを使って離散状態を周辺化します。この点は、BUGS/JAGS系のモデル表現とStanの大きな違いです。</p>
+<h2 id="なぜstanなのか">1.4　なぜStanなのか？</h2>
+<h3
+id="理由1柔軟なベイズモデリングができる">1.4.1　理由1：柔軟なベイズモデリングができる</h3>
+<p>Stanは、単純な線形回帰から、階層モデル、時系列モデル、欠測データモデル、測定誤差モデル、混合モデル、ガウス過程、ODE、サバイバルモデルまで、幅広い統計モデルを書けます。</p>
+<p>これは、既製の関数にモデルを合わせるのではなく、分析対象に合わせてモデルを設計できるという意味です。たとえば、次のような状況ではStanの柔軟性が重要になります。</p>
+<ul>
+<li>観測誤差と過程誤差を分けたい。</li>
+<li>個人差、店舗差、地域差を階層構造で表現したい。</li>
+<li>欠測値を単に削除せず、モデル内で扱いたい。</li>
+<li>標準的な回帰では表現しにくい独自の尤度を使いたい。</li>
+<li>事後予測や意思決定に必要な派生量をモデル内で生成したい。</li>
+</ul>
+<h3
+id="理由2nutshmcによる効率的なサンプリング">1.4.2　理由2：NUTS/HMCによる効率的なサンプリング</h3>
+<p>Stanの中心的なMCMC手法はHMCとNUTSです。HMCは、サンプリング対象の密度関数の微分情報を使って、事後分布内を効率よく移動するMCMC手法です。</p>
+<p>NUTSは、HMCの調整を自動化する適応的なバリアントです。RStan公式ページでも、RStanはNUTS、つまりHMCの一種であるNo-U-Turn
+Samplerによるフルベイズ推論を提供すると説明されています。</p>
+<p>実務的には、StanのNUTS/HMCは、パラメータ間に強い相関があるモデルや高次元の連続パラメータを含むモデルで有用です。ただし、すべてのモデルが自動的にうまくいくわけではありません。モデルの識別性が弱い、事前分布が不適切、パラメータ化が悪い、事後分布の幾何が複雑な場合には、divergent
+transitions、R-hat悪化、ESS低下などの診断問題が出ます。</p>
+<h3
+id="理由3診断が重視されている">1.4.3　理由3：診断が重視されている</h3>
+<p>Stanを使う利点の一つは、MCMCの結果に対する診断情報が重視されていることです。RStanやStanでは、推定値の平均や信用区間だけでなく、R-hat、ESS、divergence、treedepthなどを見る必要があります。</p>
+<p>Stan公式の診断ガイドでは、R-hatはチェーン間・チェーン内の推定量を比較する収束診断であり、最終的には少なくとも4チェーンを走らせ、一般にはR-hatが1.01未満の場合にサンプルを十分信頼するという目安が示されています。また、bulk-ESSとtail-ESSは分布の中心部と裾の推定効率を評価するための指標です。</p>
+<h3
+id="理由4モデルを明示的に書ける">1.4.4　理由4：モデルを明示的に書ける</h3>
+<p>Stanでは、モデルの仮定をコードとして明示します。これは、便利な一方で、責任も伴います。<code>brms</code>や<code>rstanarm</code>のような高水準インターフェースでは、Rの数式構文に近い形でモデルを指定できますが、Stanを直接書く場合は、尤度、事前分布、パラメータ制約、生成量を自分で設計します。</p>
+<p>Stanを直接使うと、次のような利点があります。</p>
+<ul>
+<li>モデルの仮定がコード上で明確になる。</li>
+<li>標準パッケージにない尤度や構造を書ける。</li>
+<li>事前分布を明示的に設計できる。</li>
+<li>事後予測や派生量を<code>generated quantities</code>で管理できる。</li>
+<li>モデルの問題点を診断しやすくなる。</li>
+</ul>
+<h3
+id="理由5rpythonjuliashellなど複数環境から使える">1.4.5　理由5：R、Python、Julia、Shellなど複数環境から使える</h3>
+<p>Stanは単独のRパッケージではなく、複数言語から利用できる統計モデリング基盤です。Rから使う場合には、RStanとCmdStanRが主な選択肢になります。Stan
+Toolkitでは、CmdStanRはRユーザー向けの推奨インターフェース、RStanはRインターフェースの一つとして掲載されています。</p>
+<h2 id="なぜrstanなのか">1.5　なぜRStanなのか？</h2>
+<h3
+id="rstanはstanをrから使うためのインターフェース">1.5.1　RStanはStanをRから使うためのインターフェース</h3>
+<p><strong>RStan</strong>は、StanをRから使うためのインターフェースです。パッケージ名は小文字で<code>rstan</code>です。RStan公式ページでは、RStanはStan
+C++パッケージへのRインターフェースであり、NUTS/HMC、ADVI、L-BFGS最適化を提供すると説明されています。</p>
+<p>RStanを使うと、Stanモデルを<code>.stan</code>ファイルとして書き、Rからデータを渡し、推定を実行し、結果をRオブジェクトとして扱えます。</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">length</span>(y),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> y</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">stan</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;model.stan&quot;</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> stan_data,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">iter =</span> <span class="dv">2000</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">123</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fit)</span></code></pre></div>
+<p>RStanの<code>stan()</code>関数は、Stanモデルをフィットし、その結果を<code>stanfit</code>オブジェクトとして返します。公式リファレンスでは、<code>stan()</code>はStanモデルをC++コードに変換し、共有オブジェクトとしてコンパイルし、サンプルを生成して<code>stanfit</code>オブジェクトにまとめる、と説明されています。</p>
+<h3 id="rの分析環境と統合しやすい">1.5.2　Rの分析環境と統合しやすい</h3>
+<p>RStanの強みは、Rの分析環境と統合しやすいことです。Rでは、データ前処理、可視化、統計解析、レポート作成、パッケージ化までのワークフローが成熟しています。RStanを使うと、Stanで推定した事後ドローをRのオブジェクトとして扱い、<code>summary()</code>、<code>plot()</code>、<code>as.data.frame()</code>、<code>as.matrix()</code>などで加工できます。</p>
+<p>また、Stan開発チーム関連のRパッケージとして、<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>posterior</code>、<code>rstanarm</code>などがあります。<code>bayesplot</code>は推定値・診断・事後予測チェックの可視化、<code>loo</code>は予測性能評価やモデル比較、<code>rstanarm</code>は応用回帰モデリング向けのR数式インターフェースです。</p>
+<h3 id="rstanの実行プロセス">1.5.3　RStanの実行プロセス</h3>
+<p>RStanで<code>stan()</code>を実行すると、内部的には次の処理が行われます。</p>
+<ol type="1">
+<li>Stanコードを読み込む。</li>
+<li>StanコードをC++コードへ変換する。</li>
+<li>C++コードをコンパイルし、Rセッション内に読み込む。</li>
+<li>Rのリストなどで渡したデータをStanに渡す。</li>
+<li>NUTS/HMCなどでサンプリングする。</li>
+<li>結果を<code>stanfit</code>オブジェクトとして返す。</li>
+</ol>
+<p><code>stan()</code>のデフォルトは<code>chains = 4</code>、<code>iter = 2000</code>、<code>warmup = floor(iter/2)</code>です。<code>iter</code>はウォームアップを含む各チェーンの反復数、<code>warmup</code>はステップサイズ適応が行われる期間でもあり、ウォームアップサンプルは推論に使いません。既定かつ推奨アルゴリズムはNUTSです。</p>
+<h3 id="rstanの基本設定">1.5.4　RStanの基本設定</h3>
+<p>RStanでは、よく次の設定を使います。</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">mc.cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rstan_options</span>(<span class="at">auto_write =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><code>options(mc.cores = ...)</code>は、複数チェーンを並列実行するためのR側の設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みの<code>stanmodel</code>を保存するかどうかを制御するオプションです。同じStanコードを繰り返し使う場合、再コンパイルの負担を減らせます。</p>
+<h3 id="rstanを使うべき場面">1.5.5　RStanを使うべき場面</h3>
+<p>RStanは、次のような場合に適しています。</p>
+<p><strong>R中心の分析ワークフローを維持したい場合</strong><br />
+データ処理、可視化、レポート、既存コードがRに集約されているなら、RStanは自然に組み込めます。</p>
+<p><strong>Stanコードを直接書いて柔軟なモデルを構築したい場合</strong><br />
+<code>brms</code>や<code>rstanarm</code>では表現しにくい独自の尤度、制約、潜在構造、事後予測量を扱う場合、RStanでStanコードを直接書く価値があります。</p>
+<p><strong>既存のRStan資産がある場合</strong><br />
+過去に作成された<code>.stan</code>ファイル、<code>stanfit</code>オブジェクトを前提にした解析コード、RStan依存の社内パッケージや研究コードがある場合、RStanを継続利用する合理性があります。</p>
+<p><strong>CRANバイナリや従来のR構文に依存したい場合</strong><br />
+CmdStanR公式ドキュメントでは、RStanの利点として、CRANバイナリがMacとWindows向けに利用できること、R6クラスを避けられるため多くのRユーザーにとって構文がなじみやすいこと、事前コンパイル済みStanプログラムを含むRパッケージを配布しやすいことが挙げられています。</p>
+<h3 id="rstanとcmdstanrの関係">1.5.6　RStanとCmdStanRの関係</h3>
+<p>現在のStanエコシステムでは、RStanとCmdStanRの両方があります。CmdStanRはCmdStanを背後で使う軽量なRインターフェースで、Stan
+ToolkitではRユーザー向けの推奨インターフェースとして掲載されています。</p>
+<p>一方、RStanはRセッション内からStanのC++コードを呼び出すインメモリ型のインターフェースです。CmdStanR公式ドキュメントでは、RStanはRcppやinlineを使ってRからC++コードを呼び出すのに対し、CmdStanRはRからC++を直接呼び出さず、CmdStanを通じてコンパイル・実行・出力ファイルへの書き込みを行うと説明されています。</p>
+<p>実務上は、新規プロジェクトではCmdStanRも検討対象になります。ただし、RStanは現在でもStanのRインターフェースとして公式に維持されており、R中心の既存資産がある場合には十分に有用です。</p>
+<h2 id="chapter-1-補足と文献案内">Chapter 1　補足と文献案内</h2>
+<h3 id="まず読むべき公式ドキュメント">まず読むべき公式ドキュメント</h3>
+<p>最初に確認すべきなのは、<a
+href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンスのトップページ</a>です。ここで、RStanがStan
+C++パッケージへのRインターフェースであること、NUTS/HMC、ADVI、L-BFGSを提供すること、関連Rパッケージとして<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>rstanarm</code>などがあることを確認できます。</p>
+<p>次に読むべきなのは、<a
+href="https://mc-stan.org/rstan/reference/stan.html">RStanの<code>stan()</code>関数リファレンス</a>です。ここには、<code>file</code>、<code>model_code</code>、<code>data</code>、<code>chains</code>、<code>iter</code>、<code>warmup</code>、<code>cores</code>、<code>thin</code>などの主要引数、StanコードからC++への変換、コンパイル、サンプリング、<code>stanfit</code>生成までの流れがまとまっています。</p>
+<p>Stan言語そのものを学ぶ場合は、<a
+href="https://mc-stan.org/docs/reference-manual/">Stan Reference
+Manual</a>を参照します。モデル例と実践的な書き方を学ぶ場合は、<a
+href="https://mc-stan.org/docs/stan-users-guide/">Stan User’s
+Guide</a>を使います。</p>
+<h3 id="学習順序のおすすめ">学習順序のおすすめ</h3>
+<ol type="1">
+<li>正規分布モデル、ベルヌーイモデル、ポアソンモデルを書く。</li>
+<li>RStanで<code>stan()</code>を実行し、<code>print(fit)</code>で平均、標準偏差、信用区間、R-hat、ESSを見る。</li>
+<li><code>generated quantities</code>で事後予測を作る。</li>
+<li>事後予測チェックを行う。</li>
+<li>回帰モデル、階層モデルへ進む。</li>
+<li>divergence、R-hat、ESS、treedepthなどの診断を学ぶ。</li>
+<li>必要に応じて再パラメータ化、事前分布設計、効率化を学ぶ。</li>
+</ol>
+<p>併読に向く文献としては、Gelman et al. の <em>Bayesian Data
+Analysis</em>、McElreath の <em>Statistical Rethinking: A Bayesian
+Course with Examples in R and Stan</em> が代表的です。</p>
+<hr />
+<h1 id="chapter-2-stanとrstanをはじめよう">Chapter
+2　StanとRStanをはじめよう</h1>
+<h2 id="この章の到達目標-1">この章の到達目標</h2>
+<p>この章では、RStanを実際に動かすための環境準備と、Stanコードを読むための最小限の文法を整理します。Stanは、モデルをStan言語で書き、RStanがStanコードをC++に変換・コンパイルし、Rからサンプリングを実行する、という流れで使います。</p>
+<blockquote>
+<p>注：この章の節番号は、ご指定の目次に合わせて「4.1」「4.2」としています。</p>
+</blockquote>
+<h2 id="stanとrstanの準備">4.1　StanとRStanの準備</h2>
+<h3 id="必要なもの">4.1.1　必要なもの</h3>
+<p>RStanを使うには、少なくとも次のものが必要です。</p>
+<ul>
+<li>R</li>
+<li>RStudioまたは任意のR実行環境</li>
+<li><code>rstan</code>パッケージ</li>
+<li>C++コンパイル環境</li>
+<li>Stanコードを書くためのテキストエディタ</li>
+</ul>
+<p>Stanモデルをコンパイルして実行するにはC++17コンパイラとビルド用ユーティリティが必要です。WindowsではRtools、macOSではXcode
+Command Line
+Tools、Linuxでは<code>build-essential</code>系のツールが関係します。</p>
+<h3 id="rstanのインストール">4.1.2　RStanのインストール</h3>
+<p>通常はR上で次を実行します。</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;rstan&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">repos =</span> <span class="st">&quot;https://cloud.r-project.org/&quot;</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dependencies =</span> <span class="cn">TRUE</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Linuxでnodejs関連のライブラリがない場合に限り、RStan Getting
+Startedでは次の環境変数を設定する例が示されています。</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Sys.setenv</span>(<span class="at">DOWNLOAD_STATIC_LIBV8 =</span> <span class="dv">1</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;rstan&quot;</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">repos =</span> <span class="st">&quot;https://cloud.r-project.org/&quot;</span>,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">dependencies =</span> <span class="cn">TRUE</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>推定結果の可視化と事後予測チェックまで行うなら、次も入れておきます。</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;bayesplot&quot;</span>, <span class="st">&quot;posterior&quot;</span>), <span class="at">dependencies =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><code>bayesplot</code>はパラメータ推定値、診断、事後予測チェックの可視化に使えます。</p>
+<h3 id="読み込みと基本設定">4.1.3　読み込みと基本設定</h3>
+<p>RStanを使うRスクリプトの冒頭には、通常、次を書きます。</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">mc.cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rstan_options</span>(<span class="at">auto_write =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><code>options(mc.cores = parallel::detectCores())</code>は、複数チェーンを並列実行するための設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みStanプログラムを保存し、同じStanコードを再実行するときの再コンパイルを減らすための設定です。</p>
+<h3 id="インストール確認">4.1.4　インストール確認</h3>
+<p>RStanのインストール確認には、公式Getting
+Startedで次のテストコードが示されています。</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">example</span>(stan_model, <span class="at">package =</span> <span class="st">&quot;rstan&quot;</span>, <span class="at">run.dontrun =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>このコードでStanモデルがコンパイルされ、サンプリングが始まれば、RStan、C++コンパイラ、Rとの連携は概ね動作しています。</p>
+<h3 id="最小のrstan実行例">4.1.5　最小のRStan実行例</h3>
+<p>以下は、StanコードをR文字列として渡す最小例です。実務では<code>.stan</code>ファイルに分けるほうが管理しやすいですが、初学段階では<code>model_code</code>を使うと動作確認が簡単です。</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">mc.cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rstan_options</span>(<span class="at">auto_write =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>stan_code_minimal <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] y;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="st">  real mu;</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; sigma;</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="st">  mu ~ normal(0, 10);</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="st">  sigma ~ exponential(1);</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ normal(mu, sigma);</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a><span class="st">  real y_new;</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a><span class="st">  y_new = normal_rng(mu, sigma);</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="dv">30</span>, <span class="at">mean =</span> <span class="dv">2</span>, <span class="at">sd =</span> <span class="fl">1.5</span>)</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">length</span>(y),</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> y</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>fit_minimal <span class="ot">&lt;-</span> <span class="fu">stan</span>(</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">model_code =</span> stan_code_minimal,</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> stan_data,</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">iter =</span> <span class="dv">2000</span>,</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">123</span>,</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">refresh =</span> <span class="dv">0</span></span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fit_minimal, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;mu&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;y_new&quot;</span>))</span></code></pre></div>
+<h2 id="stanの基本的な文法">4.2　Stanの基本的な文法</h2>
+<h3
+id="stanプログラムの基本ブロック-1">4.2.1　Stanプログラムの基本ブロック</h3>
+<p>Stanコードは、役割ごとにブロックを分けて書きます。</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ユーザー定義関数</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Rから渡すデータ</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// データだけから作る前処理済み変数</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 推定したい未知パラメータ</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">// パラメータから導く量。モデルでも使い、保存もしたい量</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 事前分布と尤度</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">// 事後予測、派生量、log_lik、乱数生成</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>model</code>ブロックは対数確率関数を定義する場所、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や疑似乱数生成を行う場所です。乱数生成関数は、基本的に<code>transformed data</code>、<code>generated quantities</code>、または<code>_rng</code>で終わるユーザー定義関数の中で使います。</p>
+<h3 id="dataブロック">4.2.2　<code>data</code>ブロック</h3>
+<p><code>data</code>ブロックには、Rから渡す値を宣言します。</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; N;</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] y;</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>これは、R側で次のようなリストを渡すことを意味します。</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">length</span>(y),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> y</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p><code>data</code>ブロックの変数は外部入力、たとえばRのデータ構造から読み込まれます。制約に反する値を渡すと、読み込み時点でエラーになります。</p>
+<h3 id="parametersブロック">4.2.3　<code>parameters</code>ブロック</h3>
+<p><code>parameters</code>ブロックには、推定対象を宣言します。</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> alpha;</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> beta;</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>real&lt;lower=0&gt; sigma;</code>は、<code>sigma</code>が0以上の実数であることを示します。標準偏差、分散、率、濃度など、負にならない量には制約を付けます。</p>
+<p>Stanでは、<code>parameters</code>ブロックに宣言した量がHMC/NUTSでサンプリングされます。</p>
+<h3 id="modelブロック">4.2.4　<code>model</code>ブロック</h3>
+<p><code>model</code>ブロックには、事前分布と尤度を書きます。</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  alpha ~ normal(<span class="dv">0</span>, <span class="dv">5</span>);</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  beta ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  sigma ~ exponential(<span class="dv">1</span>);</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  y ~ normal(alpha + beta * x, sigma);</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>alpha ~ normal(0, 5)</code>は切片の事前分布、<code>beta ~ normal(0, 2)</code>は傾きの事前分布、<code>y ~ normal(...)</code>は観測データの尤度です。</p>
+<p>Stanの<code>~</code>記法は、厳密には「サンプリングする」という命令ではありません。<code>y ~ normal(mu, sigma)</code>のような分布文は、<code>target += normal_lpdf(y | mu, sigma)</code>のように対数密度へ加算するための記法上の便利表現です。</p>
+<h3
+id="generated-quantitiesブロック">4.2.5　<code>generated quantities</code>ブロック</h3>
+<p><code>generated quantities</code>ブロックは、事後予測、派生量、オッズ比、相対リスク、log
+likelihoodなどを計算する場所です。</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">real</span> y_rep;</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    y_rep[n] = normal_rng(alpha + beta * x[n], sigma);</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>ここで<code>y_rep</code>は、推定されたパラメータに基づいて生成される複製データです。事後予測チェック用の複製データは<code>generated quantities</code>ブロックで生成できます。</p>
+<h3 id="型の基本">4.2.6　型の基本</h3>
+<p>Stanで頻出する型は次です。</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> n;                     <span class="co">// 整数</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> x;                    <span class="co">// 実数</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="dt">vector</span>[N] y;               <span class="co">// 長さNの列ベクトル</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="dt">row_vector</span>[K] z;           <span class="co">// 長さKの行ベクトル</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="dt">matrix</span>[N, K] X;            <span class="co">// N行K列の行列</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a><span class="dt">array</span>[N] <span class="dt">int</span> y_bin;        <span class="co">// 長さNの整数配列</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="dt">array</span>[N] <span class="dt">real</span> y_rep;       <span class="co">// 長さNの実数配列</span></span></code></pre></div>
+<p>Stanの添字はRと同じく1始まりです。</p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  y[n] ~ normal(mu[n], sigma);</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="ベクトル化">4.2.7　ベクトル化</h3>
+<p>Stanでは、ループで書ける処理をベクトル化して書けることがあります。</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>y ~ normal(alpha + beta * x, sigma);</span></code></pre></div>
+<p>これは概念的には次と同じです。</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode stan"><code class="sourceCode stan"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  y[n] ~ normal(alpha + beta * x[n], sigma);</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Stan User’s
+Guideでは、単回帰モデルの<code>y ~ normal(alpha + beta * x, sigma)</code>はベクトル化された形であり、同等のループ版より簡潔で高速だと説明されています。</p>
+<h3 id="rstanへ渡すデータ">4.2.8　RStanへ渡すデータ</h3>
+<p>RStanでは、Stanの<code>data</code>ブロックで宣言した名前と同じ名前を持つRのリストを渡します。</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>stan_data <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(df),</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="dv">3</span>,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> X,</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> df<span class="sc">$</span>y</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>注意点として、RStan公式リファレンスでは、Rの長さ1ベクトルはStan側ではスカラーとして扱われるため、<code>array[1] real y;</code>のようなStanデータには、R側で<code>array(1.0, dim = 1)</code>のように配列として渡す必要があると説明されています。</p>
+<h2 id="chapter-2-補足と文献案内">Chapter 2　補足と文献案内</h2>
+<p>この章で最初に読むべき公式資料は、<a
+href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンス</a>、<a
+href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">RStan
+Getting Started</a>、<a
+href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan
+Reference ManualのProgram Blocks</a>、<a
+href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan
+User’s GuideのRegression Models</a>です。</p>
+<p>RStanで実行する関数の仕様はRStan公式リファレンス、Stanコードの仕様はStan
+Reference Manual、モデル例はStan User’s
+Guideで確認する、という使い分けが実務的です。</p>
+<hr />
+<h1 id="chapter-3-基本的な回帰とモデルのチェック">Chapter
+3　基本的な回帰とモデルのチェック</h1>
+<h2 id="この章の到達目標-2">この章の到達目標</h2>
+<p>この章では、RStanで基本的な回帰モデルを実装し、その出力を感染症分野の実務的な問いに結びつけて解釈します。単に「数式を書いてStanで推定する」だけでなく、次の点を重視します。</p>
+<ol type="1">
+<li>回帰モデルが何を仮定しているのかを、数式と日本語で理解する。</li>
+<li>線形予測子、リンク関数、尤度、事前分布、事後分布の役割を区別する。</li>
+<li>Stanコードの各ブロックが何のために存在するかを理解する。</li>
+<li><code>print(fit)</code>や事後ドローから得られる結果を、感染症監視、リスク評価、介入評価、予測にどう使うかを説明できるようにする。</li>
+<li>事後予測チェックとHMC診断を使い、モデルを盲目的に信用しない習慣を身につける。</li>
+</ol>
+<p>Stan User’s
+Guideでは、回帰モデルをStanで書く方法、<code>generated quantities</code>を使った予測、事後予測チェックが整理されています。Stanでは、モデルの当てはまりだけでなく、MCMC診断、事後予測、モデル仮定の確認まで含めて分析します。</p>
+<p>本章のサンプルデータはすべてRで生成するシミュレーションデータです。実患者データではありませんが、感染症分野でよく出るデータ構造に合わせています。</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>節</th>
+<th>モデル</th>
+<th>データ単位</th>
+<th>感染症分野での典型例</th>
+<th>主な解釈量</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>5.1</td>
+<td>単回帰</td>
+<td>週単位・地域単位</td>
+<td>下水中ウイルス濃度と症例率</td>
+<td>傾き、予測値、しきい値超過確率</td>
+</tr>
+<tr class="even">
+<td>5.2</td>
+<td>重回帰</td>
+<td>週単位・地域単位</td>
+<td>入院率と症例数、接種率、移動量</td>
+<td>調整済み係数、シナリオ予測</td>
+</tr>
+<tr class="odd">
+<td>5.3</td>
+<td>二項ロジスティック回帰</td>
+<td>集計データ</td>
+<td>検査陽性数 / 検査数</td>
+<td>陽性確率、オッズ比</td>
+</tr>
+<tr class="even">
+<td>5.4</td>
+<td>ロジスティック回帰</td>
+<td>個人単位</td>
+<td>感染有無、曝露、接種歴</td>
+<td>個人リスク、オッズ比、VE風指標</td>
+</tr>
+<tr class="odd">
+<td>5.5</td>
+<td>ポアソン回帰</td>
+<td>地域・週のカウント</td>
+<td>症例数、人口オフセット</td>
+<td>発生率比、予測症例数</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2
+id="回帰モデルを読むための共通枠組み">3.0　回帰モデルを読むための共通枠組み</h2>
+<h3 id="回帰モデルの基本形">3.0.1　回帰モデルの基本形</h3>
+<p>回帰モデルは、応答変数 <span class="math inline">\(y\)</span>
+を説明変数 <span class="math inline">\(x\)</span>
+で説明するモデルです。ただし、統計モデリングでは、<span
+class="math inline">\(y\)</span>
+を単なる決定論的な値として扱うのではなく、確率分布から発生した観測値として扱います。</p>
+<p>多くの回帰モデルは次の3層で理解できます。</p>
+<p><strong>第1層：観測モデル</strong></p>
+<p><span class="math display">\[
+y_n \sim \text{何らかの確率分布}
+\]</span></p>
+<p>これは、観測値がどのような確率分布から出たと仮定するかを決める部分です。連続値なら正規分布、陽性数なら二項分布、症例数ならポアソン分布を使うことが多いです。</p>
+<p><strong>第2層：平均・確率・率のモデル</strong></p>
+<p><span class="math display">\[
+\mu_n,\ p_n,\ \lambda_n = f(\alpha + X_n\beta)
+\]</span></p>
+<p>ここでは、観測分布の中心的な量を説明変数で表します。正規回帰では平均
+<span class="math inline">\(\mu_n\)</span>、ロジスティック回帰では確率
+<span class="math inline">\(p_n\)</span>、ポアソン回帰では期待カウント
+<span class="math inline">\(\lambda_n\)</span> をモデル化します。</p>
+<p><strong>第3層：事前分布</strong></p>
+<p><span class="math display">\[
+\alpha \sim \text{prior}, \quad \beta_k \sim \text{prior}
+\]</span></p>
+<p>ベイズモデルでは、未知パラメータに事前分布を置きます。これは「データを見る前の知識」または「非現実的な値を抑制するための正則化」として機能します。</p>
+<h3 id="線形予測子とは">3.0.2　線形予測子とは</h3>
+<p>回帰モデルでは、次の形が頻繁に出てきます。</p>
+<p><span class="math display">\[
+\eta_n = \alpha + \beta_1 x_{n1} + \beta_2 x_{n2} + \cdots + \beta_K
+x_{nK}
+\]</span></p>
+<p>この <span class="math inline">\(\eta_n\)</span>
+を<strong>線形予測子</strong>と呼びます。</p>
+<ul>
+<li><span class="math inline">\(\alpha\)</span>
+は切片です。説明変数が0のときの基準値を表します。</li>
+<li><span class="math inline">\(\beta_k\)</span> は係数です。<span
+class="math inline">\(x_k\)</span> が1単位増えたとき、<span
+class="math inline">\(\eta\)</span> がどれだけ変わるかを表します。</li>
+<li><span class="math inline">\(X_n\beta\)</span>
+は、複数の説明変数の寄与を合計したものです。</li>
+</ul>
+<p>ただし、<span class="math inline">\(\eta_n\)</span>
+がそのまま平均や確率になるとは限りません。ロジスティック回帰やポアソン回帰では、リンク関数を通して確率や率に変換します。</p>
+<h3 id="リンク関数とは">3.0.3　リンク関数とは</h3>
+<p>感染症データでは、応答変数の種類によって自然な範囲が異なります。</p>
+<ul>
+<li>確率 <span class="math inline">\(p\)</span>
+は0から1の間でなければなりません。</li>
+<li>症例数の期待値 <span class="math inline">\(\lambda\)</span>
+は0以上でなければなりません。</li>
+<li>連続値の平均 <span class="math inline">\(\mu\)</span>
+は実数全体を取り得ます。</li>
+</ul>
+<p>線形予測子 <span class="math inline">\(\eta\)</span> は <span
+class="math inline">\(-\infty\)</span> から <span
+class="math inline">\(+\infty\)</span>
+まで取り得るため、必要に応じて変換します。</p>
+<p>ロジスティック回帰では、</p>
+<p><span class="math display">\[
+p_n = \frac{1}{1 + \exp(-\eta_n)}
+\]</span></p>
+<p>とします。これはStanでは<code>inv_logit(eta)</code>または<code>bernoulli_logit</code>、<code>binomial_logit</code>として扱えます。</p>
+<p>ポアソン回帰では、</p>
+<p><span class="math display">\[
+\lambda_n = \exp(\eta_n)
+\]</span></p>
+<p>とします。Stanでは<code>poisson_log(eta)</code>を使うと、<span
+class="math inline">\(\eta\)</span>をログ期待値として直接渡せます。</p>
+<h3 id="rstanの出力で見るもの">3.0.4　RStanの出力で見るもの</h3>
+<p><code>print(fit)</code>で表示される代表的な列は次のように読みます。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>列</th>
+<th>意味</th>
+<th>実務上の読み方</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mean</code></td>
+<td>事後平均</td>
+<td>推定量の平均的な値</td>
+</tr>
+<tr class="even">
+<td><code>sd</code></td>
+<td>事後標準偏差</td>
+<td>推定の不確実性</td>
+</tr>
+<tr class="odd">
+<td><code>2.5%</code>, <code>50%</code>, <code>97.5%</code></td>
+<td>事後分布の分位点</td>
+<td>95%信用区間と中央値</td>
+</tr>
+<tr class="even">
+<td><code>n_eff</code></td>
+<td>有効サンプルサイズ</td>
+<td>MCMCサンプルの実効的な情報量</td>
+</tr>
+<tr class="odd">
+<td><code>Rhat</code></td>
+<td>収束診断</td>
+<td>1.00に近いほどよい。最終推論では概ね1.01未満を目安にする</td>
+</tr>
+</tbody>
+</table>
+<p>感染症分野では、係数そのものだけでなく、次のような派生量のほうが実務的に使いやすいことが多いです。</p>
+<ul>
+<li>オッズ比：<code>exp(beta)</code></li>
+<li>発生率比：<code>exp(beta)</code></li>
+<li>ワクチン有効性風の値：<code>(1 - odds_ratio) * 100</code></li>
+<li>しきい値超過確率：<code>mean(predicted_cases &gt; threshold)</code></li>
+<li>予測陽性率：<code>posterior mean of p</code></li>
+<li>予測症例数：<code>posterior mean of lambda</code>または<code>y_rep</code></li>
+</ul>
+<h3 id="共通rコード">3.0.5　共通Rコード</h3>
+<p>以下は本章の各節で共通して使うRコードです。</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstan)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bayesplot)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">mc.cores =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>())</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rstan_options</span>(<span class="at">auto_write =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2026</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>stan_sampling_args <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">iter =</span> <span class="dv">2000</span>,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">warmup =</span> <span class="dv">1000</span>,</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">2026</span>,</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">refresh =</span> <span class="dv">0</span>,</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">control =</span> <span class="fu">list</span>(<span class="at">adapt_delta =</span> <span class="fl">0.95</span>)</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>check_fit <span class="ot">&lt;-</span> <span class="cf">function</span>(fit, pars) {</span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(fit, <span class="at">pars =</span> pars, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span>))</span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span><span class="fu">check_hmc_diagnostics</span>(fit)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p><code>adapt_delta = 0.95</code>はdivergenceを減らす目的で使うことがあります。ただし、警告が出たときは、単に<code>adapt_delta</code>を上げるだけでは不十分です。事前分布、スケーリング、パラメータ化、尤度、外れ値、過分散、識別性を確認します。</p>
+<hr />
+<h1 id="単回帰">5.1　単回帰</h1>
+<h2 id="感染症分野での問い">5.1.1　感染症分野での問い</h2>
+<p>ここでは、週別の下水中ウイルスRNA濃度と、同じ地域の週別COVID-19症例率の関係を考えます。下水監視では、地域の感染状況を個人検査とは別の経路で把握できます。実務上の問いは次のようになります。</p>
+<blockquote>
+<p>下水中ウイルス濃度が高い週ほど、地域の症例率も高いと言えるか。さらに、下水指標から次週または同週の症例率をどの程度予測できるか。</p>
+</blockquote>
+<p>この節では簡単のため、下水中ウイルス濃度を対数変換して標準化し、対数症例率を説明します。</p>
+<h2 id="数式">5.1.2　数式</h2>
+<p><span class="math display">\[
+y_n \sim \mathrm{Normal}(\mu_n, \sigma)
+\]</span></p>
+<p><span class="math display">\[
+\mu_n = \alpha + \beta x_n
+\]</span></p>
+<p><span class="math display">\[
+\alpha \sim \mathrm{Normal}(0, 5), \quad
+\beta \sim \mathrm{Normal}(0, 2), \quad
+\sigma \sim \mathrm{Exponential}(1)
+\]</span></p>
+<p>ここで、</p>
+<ul>
+<li><span class="math inline">\(y_n\)</span>：週 <span
+class="math inline">\(n\)</span>
+の対数症例率、たとえば<code>log(cases_per_100k)</code></li>
+<li><span class="math inline">\(x_n\)</span>：週 <span
+class="math inline">\(n\)</span> の標準化済み下水ウイルス指標</li>
+<li><span
+class="math inline">\(\mu_n\)</span>：モデルが予測する平均的な対数症例率</li>
+<li><span
+class="math inline">\(\alpha\)</span>：下水指標が平均的な週の対数症例率</li>
+<li><span
+class="math inline">\(\beta\)</span>：下水指標が1標準偏差高いときの対数症例率の変化</li>
+<li><span
+class="math inline">\(\sigma\)</span>：モデルでは説明しきれない週ごとのばらつき</li>
+</ul>
+<h2 id="数式の仕組み">5.1.3　数式の仕組み</h2>
+<p>このモデルは、「観測された対数症例率は、下水指標から予測される平均値
+<span class="math inline">\(\mu_n\)</span>
+の周りに正規分布でばらつく」と仮定します。</p>
+<p>下水指標 <span class="math inline">\(x_n\)</span>
+が1増えると、平均対数症例率 <span class="math inline">\(\mu_n\)</span>
+は <span class="math inline">\(\beta\)</span>
+だけ変化します。アウトカムが対数症例率なので、元の症例率スケールでは
+<span class="math inline">\(\exp(\beta)\)</span>
+倍として解釈できます。</p>
+<p>たとえば、<span class="math inline">\(\beta = 0.70\)</span>
+なら、</p>
+<p><span class="math display">\[
+\exp(0.70) \approx 2.01
+\]</span></p>
+<p>です。つまり、下水指標が1標準偏差高い週では、症例率が約2倍高い、という読み方になります。ただし、これは相関・予測の解釈であり、下水中ウイルス濃度が症例発生を原因として増やすという意味ではありません。</p>
+<h2 id="サンプルデータ作成">5.1.4　サンプルデータ作成</h2>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">101</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">40</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>week <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>N</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 下水中ウイルスRNA濃度を想定した指標。</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 実データでは、コピー数、流量補正値、人口補正値などを使うことがある。</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>wastewater_raw <span class="ot">&lt;-</span> <span class="fu">exp</span>(</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="fl">2.5</span> <span class="sc">+</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>    <span class="fl">0.03</span> <span class="sc">*</span> week <span class="sc">+</span></span>
+<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">12</span>) <span class="sc">*</span> <span class="fl">0.5</span> <span class="sc">+</span></span>
+<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.35</span>)</span>
+<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 解析では対数化して標準化する。</span></span>
+<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>log_wastewater <span class="ot">&lt;-</span> <span class="fu">log</span>(wastewater_raw)</span>
+<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(log_wastewater))</span>
+<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-19"><a href="#cb28-19" aria-hidden="true" tabindex="-1"></a><span class="co"># 真の生成過程。下水指標が高いほど症例率も高いように作る。</span></span>
+<span id="cb28-20"><a href="#cb28-20" aria-hidden="true" tabindex="-1"></a>alpha_true <span class="ot">&lt;-</span> <span class="fl">2.0</span></span>
+<span id="cb28-21"><a href="#cb28-21" aria-hidden="true" tabindex="-1"></a>beta_true <span class="ot">&lt;-</span> <span class="fl">0.75</span></span>
+<span id="cb28-22"><a href="#cb28-22" aria-hidden="true" tabindex="-1"></a>sigma_true <span class="ot">&lt;-</span> <span class="fl">0.35</span></span>
+<span id="cb28-23"><a href="#cb28-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-24"><a href="#cb28-24" aria-hidden="true" tabindex="-1"></a>log_cases_per_100k <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(</span>
+<span id="cb28-25"><a href="#cb28-25" aria-hidden="true" tabindex="-1"></a>  N,</span>
+<span id="cb28-26"><a href="#cb28-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean =</span> alpha_true <span class="sc">+</span> beta_true <span class="sc">*</span> x,</span>
+<span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">sd =</span> sigma_true</span>
+<span id="cb28-28"><a href="#cb28-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-29"><a href="#cb28-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-30"><a href="#cb28-30" aria-hidden="true" tabindex="-1"></a>cases_per_100k <span class="ot">&lt;-</span> <span class="fu">exp</span>(log_cases_per_100k)</span>
+<span id="cb28-31"><a href="#cb28-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-32"><a href="#cb28-32" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb28-33"><a href="#cb28-33" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> week,</span>
+<span id="cb28-34"><a href="#cb28-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">wastewater_raw =</span> wastewater_raw,</span>
+<span id="cb28-35"><a href="#cb28-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_wastewater_z =</span> x,</span>
+<span id="cb28-36"><a href="#cb28-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">cases_per_100k =</span> cases_per_100k,</span>
+<span id="cb28-37"><a href="#cb28-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_cases_per_100k =</span> log_cases_per_100k</span>
+<span id="cb28-38"><a href="#cb28-38" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb28-39"><a href="#cb28-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-40"><a href="#cb28-40" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d1)</span></code></pre></div>
+<h2 id="stanコード">5.1.5　Stanコード</h2>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>stan_code_simple_lm <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="st">  // Rから渡される観測データを宣言する。</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="st">  // Nは週数、xは標準化済み下水指標、yは対数症例率。</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] x;</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] y;</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは切片、betaは下水指標の係数。</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="st">  // sigmaは観測誤差の標準偏差なので0以上に制約する。</span></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="st">  real alpha;</span></span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="st">  real beta;</span></span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; sigma;</span></span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="st">  // 事前分布。</span></span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a><span class="st">  // xとyを標準化または対数化しているため、過度に広すぎない弱情報事前分布を使う。</span></span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a><span class="st">  alpha ~ normal(0, 5);</span></span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a><span class="st">  beta ~ normal(0, 2);</span></span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a><span class="st">  sigma ~ exponential(1);</span></span>
+<span id="cb29-24"><a href="#cb29-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-25"><a href="#cb29-25" aria-hidden="true" tabindex="-1"></a><span class="st">  // 尤度。</span></span>
+<span id="cb29-26"><a href="#cb29-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // 対数症例率yは、平均 alpha + beta * x、標準偏差sigmaの正規分布に従うと仮定する。</span></span>
+<span id="cb29-27"><a href="#cb29-27" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ normal(alpha + beta * x, sigma);</span></span>
+<span id="cb29-28"><a href="#cb29-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb29-29"><a href="#cb29-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-30"><a href="#cb29-30" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb29-31"><a href="#cb29-31" aria-hidden="true" tabindex="-1"></a><span class="st">  // 推定後に計算したい量を置く。</span></span>
+<span id="cb29-32"><a href="#cb29-32" aria-hidden="true" tabindex="-1"></a><span class="st">  // muは各週の平均予測値、y_repは事後予測チェック用の複製データ。</span></span>
+<span id="cb29-33"><a href="#cb29-33" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] mu;</span></span>
+<span id="cb29-34"><a href="#cb29-34" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] real y_rep;</span></span>
+<span id="cb29-35"><a href="#cb29-35" aria-hidden="true" tabindex="-1"></a><span class="st">  real rate_ratio_per_1sd;</span></span>
+<span id="cb29-36"><a href="#cb29-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-37"><a href="#cb29-37" aria-hidden="true" tabindex="-1"></a><span class="st">  rate_ratio_per_1sd = exp(beta);</span></span>
+<span id="cb29-38"><a href="#cb29-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-39"><a href="#cb29-39" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb29-40"><a href="#cb29-40" aria-hidden="true" tabindex="-1"></a><span class="st">    mu[n] = alpha + beta * x[n];</span></span>
+<span id="cb29-41"><a href="#cb29-41" aria-hidden="true" tabindex="-1"></a><span class="st">    y_rep[n] = normal_rng(mu[n], sigma);</span></span>
+<span id="cb29-42"><a href="#cb29-42" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb29-43"><a href="#cb29-43" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb29-44"><a href="#cb29-44" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<h2
+id="stanコードのブロック別意図">5.1.6　Stanコードのブロック別意図</h2>
+<p><strong><code>data</code>ブロック</strong><br />
+Stanの外から渡す値を宣言します。ここでは週数<code>N</code>、説明変数<code>x</code>、応答変数<code>y</code>を渡します。Stanは<code>data</code>ブロックの値を固定値として扱い、推定対象にはしません。</p>
+<p><strong><code>parameters</code>ブロック</strong><br />
+データから推定したい未知量を宣言します。<code>alpha</code>と<code>beta</code>は実数全体を取り得ます。<code>sigma</code>は標準偏差なので負にならないよう<code>real&lt;lower=0&gt;</code>とします。</p>
+<p><strong><code>model</code>ブロック</strong><br />
+事前分布と尤度を書きます。Stanの<code>~</code>記法は乱数生成ではなく、対数密度への加算です。ここでは、パラメータに事前分布を置き、観測された<code>y</code>が正規分布から生じたという仮定を入れています。</p>
+<p><strong><code>generated quantities</code>ブロック</strong><br />
+MCMCで得られた各事後ドローに対して、追加の量を計算します。<code>mu</code>は平均構造の推定値、<code>y_rep</code>は同じモデルから生成される仮想データです。<code>rate_ratio_per_1sd = exp(beta)</code>は、対数症例率を元の率スケールに戻した解釈用の量です。</p>
+<h2 id="rstanで推定">5.1.7　RStanで推定</h2>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>stan_data1 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d1),</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> d1<span class="sc">$</span>log_wastewater_z,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d1<span class="sc">$</span>log_cases_per_100k</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>fit1 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span>stan,</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">model_code =</span> stan_code_simple_lm, <span class="at">data =</span> stan_data1),</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    stan_sampling_args</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="fu">check_fit</span>(fit1, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;rate_ratio_per_1sd&quot;</span>))</span></code></pre></div>
+<h2 id="出力結果の読み方">5.1.8　出力結果の読み方</h2>
+<p><code>beta</code>が正で、95%信用区間の大部分が0より上にあれば、下水指標と対数症例率の間に正の関連があると解釈します。</p>
+<p><code>rate_ratio_per_1sd</code>は実務上わかりやすい量です。たとえば中央値が2.1なら、下水指標が1標準偏差高い週では、症例率が約2.1倍高いという意味です。</p>
+<p><code>sigma</code>は、下水指標だけでは説明できない週ごとのばらつきです。<code>sigma</code>が大きい場合、下水指標は関連していても、単独では症例率の予測に不十分かもしれません。</p>
+<h2 id="モデルチェックと実応用">5.1.9　モデルチェックと実応用</h2>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>post1 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit1)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>y_rep1 <span class="ot">&lt;-</span> post1<span class="sc">$</span>y_rep</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 観測データと複製データの分布比較</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_dens_overlay</span>(</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d1<span class="sc">$</span>log_cases_per_100k,</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> y_rep1[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(y_rep1)), <span class="dv">50</span>), ]</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 予測平均と観測値の比較</span></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>mu_mean1 <span class="ot">&lt;-</span> <span class="fu">apply</span>(post1<span class="sc">$</span>mu, <span class="dv">2</span>, mean)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  mu_mean1,</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>  d1<span class="sc">$</span>log_cases_per_100k,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Posterior mean fitted log case rate&quot;</span>,</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">&quot;Observed log case rate&quot;</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span></code></pre></div>
+<p>実応用では、次のような使い方ができます。</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 例：症例率が100人/10万人を超える確率を週ごとに推定する。</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>threshold_log <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">100</span>)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>prob_above_100 <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(post1<span class="sc">$</span>y_rep <span class="sc">&gt;</span> threshold_log)</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>result1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> d1<span class="sc">$</span>week,</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">observed_cases_per_100k =</span> d1<span class="sc">$</span>cases_per_100k,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">prob_cases_above_100_per_100k =</span> prob_above_100</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(result1)</span></code></pre></div>
+<p>この確率は、下水監視に基づく警戒レベル設定や追加検査体制の判断に使えます。ただし、実務では、報告遅れ、曜日効果、検査行動の変化、下水処理区の人口変動などを考慮する必要があります。</p>
+<hr />
+<h1 id="重回帰">5.2　重回帰</h1>
+<h2 id="感染症分野での問い-1">5.2.1　感染症分野での問い</h2>
+<p>単回帰では1つの説明変数だけを使いました。しかし、感染症データでは複数の要因が同時に関係します。たとえば、入院率は症例数だけでなく、ワクチン接種率、年齢構成、変異株、医療アクセス、行動変化、季節性に影響されます。</p>
+<p>この節では、週別の呼吸器感染症入院率を、症例数指標、ワクチン接種率、移動量、変異株流行期で説明します。</p>
+<h2 id="数式-1">5.2.2　数式</h2>
+<p><span class="math display">\[
+y_n \sim \mathrm{Normal}(\mu_n, \sigma)
+\]</span></p>
+<p><span class="math display">\[
+\mu_n = \alpha + \beta_1 x_{n1} + \beta_2 x_{n2} + \beta_3 x_{n3} +
+\beta_4 x_{n4}
+\]</span></p>
+<p>行列で書くと、</p>
+<p><span class="math display">\[
+\mu = \alpha + X\beta
+\]</span></p>
+<p>です。</p>
+<p>ここで、</p>
+<ul>
+<li><span class="math inline">\(y_n\)</span>：週 <span
+class="math inline">\(n\)</span> の対数入院率</li>
+<li><span
+class="math inline">\(x_{n1}\)</span>：標準化済み症例数指標</li>
+<li><span
+class="math inline">\(x_{n2}\)</span>：標準化済みワクチン接種率</li>
+<li><span class="math inline">\(x_{n3}\)</span>：標準化済み移動量</li>
+<li><span
+class="math inline">\(x_{n4}\)</span>：変異株流行期の指標、0または1</li>
+<li><span
+class="math inline">\(\beta_k\)</span>：他の変数を固定したときの各説明変数の関連</li>
+</ul>
+<h2 id="数式の仕組み-1">5.2.3　数式の仕組み</h2>
+<p>重回帰のポイントは、係数が<strong>調整済みの関連</strong>を表すことです。</p>
+<p>たとえば、<span
+class="math inline">\(\beta_2\)</span>がワクチン接種率の係数だとします。この係数は、「症例数指標、移動量、変異株流行期が同じ条件だとしたとき、ワクチン接種率が高い週では入院率がどの程度違うか」を表します。</p>
+<p>ただし、これは自動的に因果効果を意味しません。ワクチン接種率が高い地域は年齢構成、医療アクセス、感染歴、行動、検査体制も異なる可能性があります。重回帰は交絡調整の基本ですが、必要な交絡因子が入っていなければ、係数はバイアスを含みます。</p>
+<p>アウトカムが対数入院率の場合、<span
+class="math inline">\(\exp(\beta_k)\)</span>は入院率比として読めます。たとえば、ワクチン接種率の標準化係数が<span
+class="math inline">\(-0.30\)</span>なら、</p>
+<p><span class="math display">\[
+\exp(-0.30) \approx 0.74
+\]</span></p>
+<p>なので、接種率が1標準偏差高い週では、調整後の入院率が約26%低い、という読み方になります。</p>
+<h2 id="サンプルデータ作成-1">5.2.4　サンプルデータ作成</h2>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">102</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">60</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>week <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>N</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>log_cases_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="fl">1.5</span> <span class="sc">+</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">16</span>) <span class="sc">+</span> <span class="fl">0.03</span> <span class="sc">*</span> week <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.4</span>)</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>vacc_coverage <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fl">0.9</span>, <span class="fu">pmax</span>(<span class="fl">0.2</span>, <span class="fl">0.35</span> <span class="sc">+</span> <span class="fl">0.008</span> <span class="sc">*</span> week <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.03</span>)))</span>
+<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>vacc_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(vacc_coverage))</span>
+<span id="cb33-12"><a href="#cb33-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-13"><a href="#cb33-13" aria-hidden="true" tabindex="-1"></a>mobility_index <span class="ot">&lt;-</span> <span class="fl">0.2</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">10</span>) <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.4</span>)</span>
+<span id="cb33-14"><a href="#cb33-14" aria-hidden="true" tabindex="-1"></a>mobility_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(mobility_index))</span>
+<span id="cb33-15"><a href="#cb33-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-16"><a href="#cb33-16" aria-hidden="true" tabindex="-1"></a>variant_period <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(week <span class="sc">&gt;=</span> <span class="dv">35</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb33-17"><a href="#cb33-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-18"><a href="#cb33-18" aria-hidden="true" tabindex="-1"></a>X2 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb33-19"><a href="#cb33-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_cases_z =</span> log_cases_z,</span>
+<span id="cb33-20"><a href="#cb33-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> vacc_z,</span>
+<span id="cb33-21"><a href="#cb33-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">mobility_z =</span> mobility_z,</span>
+<span id="cb33-22"><a href="#cb33-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">variant_period =</span> variant_period</span>
+<span id="cb33-23"><a href="#cb33-23" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-24"><a href="#cb33-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-25"><a href="#cb33-25" aria-hidden="true" tabindex="-1"></a>beta_true <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb33-26"><a href="#cb33-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_cases_z =</span> <span class="fl">0.65</span>,</span>
+<span id="cb33-27"><a href="#cb33-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> <span class="sc">-</span><span class="fl">0.35</span>,</span>
+<span id="cb33-28"><a href="#cb33-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">mobility_z =</span> <span class="fl">0.20</span>,</span>
+<span id="cb33-29"><a href="#cb33-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">variant_period =</span> <span class="fl">0.45</span></span>
+<span id="cb33-30"><a href="#cb33-30" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-31"><a href="#cb33-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-32"><a href="#cb33-32" aria-hidden="true" tabindex="-1"></a>alpha_true <span class="ot">&lt;-</span> <span class="fl">1.0</span></span>
+<span id="cb33-33"><a href="#cb33-33" aria-hidden="true" tabindex="-1"></a>sigma_true <span class="ot">&lt;-</span> <span class="fl">0.30</span></span>
+<span id="cb33-34"><a href="#cb33-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-35"><a href="#cb33-35" aria-hidden="true" tabindex="-1"></a>log_hosp_per_100k <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(</span>
+<span id="cb33-36"><a href="#cb33-36" aria-hidden="true" tabindex="-1"></a>  N,</span>
+<span id="cb33-37"><a href="#cb33-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">mean =</span> <span class="fu">as.vector</span>(alpha_true <span class="sc">+</span> X2 <span class="sc">%*%</span> beta_true),</span>
+<span id="cb33-38"><a href="#cb33-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">sd =</span> sigma_true</span>
+<span id="cb33-39"><a href="#cb33-39" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-40"><a href="#cb33-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-41"><a href="#cb33-41" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb33-42"><a href="#cb33-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> week,</span>
+<span id="cb33-43"><a href="#cb33-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_hosp_per_100k =</span> log_hosp_per_100k,</span>
+<span id="cb33-44"><a href="#cb33-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">hosp_per_100k =</span> <span class="fu">exp</span>(log_hosp_per_100k),</span>
+<span id="cb33-45"><a href="#cb33-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_cases_z =</span> log_cases_z,</span>
+<span id="cb33-46"><a href="#cb33-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_coverage =</span> vacc_coverage,</span>
+<span id="cb33-47"><a href="#cb33-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> vacc_z,</span>
+<span id="cb33-48"><a href="#cb33-48" aria-hidden="true" tabindex="-1"></a>  <span class="at">mobility_z =</span> mobility_z,</span>
+<span id="cb33-49"><a href="#cb33-49" aria-hidden="true" tabindex="-1"></a>  <span class="at">variant_period =</span> variant_period</span>
+<span id="cb33-50"><a href="#cb33-50" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-51"><a href="#cb33-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-52"><a href="#cb33-52" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d2)</span></code></pre></div>
+<h2 id="stanコード-1">5.2.5　Stanコード</h2>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>stan_code_multiple_lm <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="st">  // Nは観測数、Kは説明変数の数。</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="st">  // XはN行K列の説明変数行列、yは対数入院率。</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; K;</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[N, K] X;</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] y;</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは切片。</span></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="st">  // betaはK個の説明変数に対応する係数ベクトル。</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="st">  // sigmaは正規分布の残差標準偏差。</span></span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a><span class="st">  real alpha;</span></span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] beta;</span></span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a><span class="st">  real&lt;lower=0&gt; sigma;</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-19"><a href="#cb34-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-20"><a href="#cb34-20" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb34-21"><a href="#cb34-21" aria-hidden="true" tabindex="-1"></a><span class="st">  // 事前分布。</span></span>
+<span id="cb34-22"><a href="#cb34-22" aria-hidden="true" tabindex="-1"></a><span class="st">  // 説明変数を標準化しているため、beta ~ normal(0, 2)はかなり広い。</span></span>
+<span id="cb34-23"><a href="#cb34-23" aria-hidden="true" tabindex="-1"></a><span class="st">  alpha ~ normal(0, 5);</span></span>
+<span id="cb34-24"><a href="#cb34-24" aria-hidden="true" tabindex="-1"></a><span class="st">  beta ~ normal(0, 2);</span></span>
+<span id="cb34-25"><a href="#cb34-25" aria-hidden="true" tabindex="-1"></a><span class="st">  sigma ~ exponential(1);</span></span>
+<span id="cb34-26"><a href="#cb34-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-27"><a href="#cb34-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // 尤度。</span></span>
+<span id="cb34-28"><a href="#cb34-28" aria-hidden="true" tabindex="-1"></a><span class="st">  // X * betaで各観測の線形予測子をまとめて計算する。</span></span>
+<span id="cb34-29"><a href="#cb34-29" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ normal(alpha + X * beta, sigma);</span></span>
+<span id="cb34-30"><a href="#cb34-30" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-31"><a href="#cb34-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-32"><a href="#cb34-32" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb34-33"><a href="#cb34-33" aria-hidden="true" tabindex="-1"></a><span class="st">  // muは各観測の平均予測値。</span></span>
+<span id="cb34-34"><a href="#cb34-34" aria-hidden="true" tabindex="-1"></a><span class="st">  // y_repは事後予測チェック用。</span></span>
+<span id="cb34-35"><a href="#cb34-35" aria-hidden="true" tabindex="-1"></a><span class="st">  // rate_ratioは各係数を元の率比スケールに変換した量。</span></span>
+<span id="cb34-36"><a href="#cb34-36" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] mu;</span></span>
+<span id="cb34-37"><a href="#cb34-37" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] real y_rep;</span></span>
+<span id="cb34-38"><a href="#cb34-38" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] rate_ratio;</span></span>
+<span id="cb34-39"><a href="#cb34-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-40"><a href="#cb34-40" aria-hidden="true" tabindex="-1"></a><span class="st">  mu = alpha + X * beta;</span></span>
+<span id="cb34-41"><a href="#cb34-41" aria-hidden="true" tabindex="-1"></a><span class="st">  rate_ratio = exp(beta);</span></span>
+<span id="cb34-42"><a href="#cb34-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-43"><a href="#cb34-43" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb34-44"><a href="#cb34-44" aria-hidden="true" tabindex="-1"></a><span class="st">    y_rep[n] = normal_rng(mu[n], sigma);</span></span>
+<span id="cb34-45"><a href="#cb34-45" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb34-46"><a href="#cb34-46" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb34-47"><a href="#cb34-47" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<h2
+id="stanコードのブロック別意図-1">5.2.6　Stanコードのブロック別意図</h2>
+<p><strong><code>data</code>ブロック</strong><br />
+複数の説明変数を<code>matrix[N, K] X</code>として渡します。R側で<code>cbind()</code>した列の順番が、Stanの<code>beta[1]</code>、<code>beta[2]</code>、…に対応します。</p>
+<p><strong><code>parameters</code>ブロック</strong><br />
+<code>beta</code>を<code>vector[K]</code>として宣言することで、説明変数の数が増えても同じStanコードを使えます。</p>
+<p><strong><code>model</code>ブロック</strong><br />
+<code>X * beta</code>は、各観測について <span
+class="math inline">\(\beta_1x_1 + \cdots + \beta_Kx_K\)</span>
+を計算します。ベクトル化して書くことで、コードが短くなり、効率も良くなります。</p>
+<p><strong><code>generated quantities</code>ブロック</strong><br />
+<code>rate_ratio = exp(beta)</code>により、対数スケールの係数を率比として保存します。R側で毎回計算してもよいですが、Stan側に書くと<code>print(fit, pars = "rate_ratio")</code>で直接確認できます。</p>
+<h2 id="rstanで推定-1">5.2.7　RStanで推定</h2>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>stan_data2 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d2),</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">ncol</span>(X2),</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> X2,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d2<span class="sc">$</span>log_hosp_per_100k</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span>stan,</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">model_code =</span> stan_code_multiple_lm, <span class="at">data =</span> stan_data2),</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>    stan_sampling_args</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="fu">check_fit</span>(fit2, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;sigma&quot;</span>, <span class="st">&quot;rate_ratio&quot;</span>))</span></code></pre></div>
+<h2 id="出力結果の読み方-1">5.2.8　出力結果の読み方</h2>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>summary2_beta <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit2, <span class="at">pars =</span> <span class="st">&quot;beta&quot;</span>)<span class="sc">$</span>summary</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(summary2_beta) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X2)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>summary2_beta[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;50%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>, <span class="st">&quot;Rhat&quot;</span>, <span class="st">&quot;n_eff&quot;</span>)]</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>summary2_rr <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit2, <span class="at">pars =</span> <span class="st">&quot;rate_ratio&quot;</span>)<span class="sc">$</span>summary</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(summary2_rr) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X2)</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>summary2_rr[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;50%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>, <span class="st">&quot;Rhat&quot;</span>, <span class="st">&quot;n_eff&quot;</span>)]</span></code></pre></div>
+<p><code>beta</code>は対数入院率スケールの係数です。<code>rate_ratio</code>は入院率比です。</p>
+<ul>
+<li><code>log_cases_z</code>の<code>rate_ratio</code>が1より大きい：症例数指標が高い週ほど入院率が高い。</li>
+<li><code>vacc_z</code>の<code>rate_ratio</code>が1より小さい：接種率が高い週ほど、調整後の入院率が低い。</li>
+<li><code>variant_period</code>の<code>rate_ratio</code>が1より大きい：変異株流行期では、他の変数を調整しても入院率が高い。</li>
+</ul>
+<h2 id="モデルチェックと実応用-1">5.2.9　モデルチェックと実応用</h2>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>post2 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit2)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>y_rep2 <span class="ot">&lt;-</span> post2<span class="sc">$</span>y_rep</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_dens_overlay</span>(</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d2<span class="sc">$</span>log_hosp_per_100k,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> y_rep2[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(y_rep2)), <span class="dv">50</span>), ]</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>mu_mean2 <span class="ot">&lt;-</span> <span class="fu">apply</span>(post2<span class="sc">$</span>mu, <span class="dv">2</span>, mean)</span>
+<span id="cb37-10"><a href="#cb37-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-11"><a href="#cb37-11" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb37-12"><a href="#cb37-12" aria-hidden="true" tabindex="-1"></a>  mu_mean2,</span>
+<span id="cb37-13"><a href="#cb37-13" aria-hidden="true" tabindex="-1"></a>  d2<span class="sc">$</span>log_hosp_per_100k,</span>
+<span id="cb37-14"><a href="#cb37-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Posterior mean fitted log hospitalization rate&quot;</span>,</span>
+<span id="cb37-15"><a href="#cb37-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">&quot;Observed log hospitalization rate&quot;</span></span>
+<span id="cb37-16"><a href="#cb37-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb37-17"><a href="#cb37-17" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span></code></pre></div>
+<p>実応用では、シナリオ比較が重要です。たとえば「接種率が1標準偏差高い場合、入院率はどの程度下がるか」を事後ドローで計算できます。</p>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>post2 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit2)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>j_vacc <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">colnames</span>(X2) <span class="sc">==</span> <span class="st">&quot;vacc_z&quot;</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 接種率が1標準偏差高い場合の入院率比。</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>rr_vacc_1sd <span class="ot">&lt;-</span> <span class="fu">exp</span>(post2<span class="sc">$</span>beta[, j_vacc])</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(rr_vacc_1sd, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span>))</span></code></pre></div>
+<p>この結果は、感染症対策会議などで「接種率の高い地域・期間では、調整後入院率がどの程度低い傾向にあるか」を説明する材料になります。ただし、観察データなので、因果効果として報告するには設計と交絡調整が不十分でないかを別途検討します。</p>
+<hr />
+<h1 id="二項ロジスティック回帰">5.3　二項ロジスティック回帰</h1>
+<h2 id="感染症分野での問い-2">5.3.1　感染症分野での問い</h2>
+<p>この節では、週別の検査陽性数と検査数を扱います。感染症監視では、単に陽性率<code>positive / tested</code>を計算するだけでなく、検査数の違いを考慮した上で、陽性確率がどの要因と関係しているかをモデル化します。</p>
+<p>問いは次のようになります。</p>
+<blockquote>
+<p>ILI活動、ワクチン接種率、季節性を考慮したとき、週別の検査陽性確率はどう変わるか。</p>
+</blockquote>
+<p>このような集計データでは、陽性率を正規分布で近似するよりも、陽性数を二項分布で扱うほうが自然です。検査数が少ない週では陽性率の不確実性が大きく、検査数が多い週では不確実性が小さいことを、二項分布が自動的に反映します。</p>
+<h2 id="数式-2">5.3.2　数式</h2>
+<p><span class="math display">\[
+y_n \sim \mathrm{Binomial}(m_n, p_n)
+\]</span></p>
+<p><span class="math display">\[
+\mathrm{logit}(p_n) = \eta_n = \alpha + X_n\beta
+\]</span></p>
+<p><span class="math display">\[
+p_n = \frac{1}{1 + \exp(-\eta_n)}
+\]</span></p>
+<p>ここで、</p>
+<ul>
+<li><span class="math inline">\(y_n\)</span>：週 <span
+class="math inline">\(n\)</span> の陽性数</li>
+<li><span class="math inline">\(m_n\)</span>：週 <span
+class="math inline">\(n\)</span> の検査数</li>
+<li><span class="math inline">\(p_n\)</span>：週 <span
+class="math inline">\(n\)</span> の陽性確率</li>
+<li><span
+class="math inline">\(\eta_n\)</span>：陽性オッズの対数、つまりlog
+odds</li>
+<li><span
+class="math inline">\(\beta_k\)</span>：説明変数が1単位増えたときのlog
+oddsの変化</li>
+</ul>
+<h2 id="数式の仕組み-2">5.3.3　数式の仕組み</h2>
+<p>二項分布は、「<span
+class="math inline">\(m_n\)</span>回の検査のうち、<span
+class="math inline">\(y_n\)</span>回陽性になる」というデータに合っています。陽性率
+<span class="math inline">\(y_n/m_n\)</span>
+を直接モデル化するのではなく、陽性数そのものをモデル化します。</p>
+<p>ロジット変換は、確率 <span class="math inline">\(p\)</span>
+を実数全体に変換します。</p>
+<p><span class="math display">\[
+\mathrm{logit}(p) = \log\frac{p}{1-p}
+\]</span></p>
+<p><span class="math inline">\(\frac{p}{1-p}\)</span>
+はオッズです。したがって、係数 <span
+class="math inline">\(\beta\)</span>
+を指数変換すると、オッズ比になります。</p>
+<p><span class="math display">\[
+\mathrm{odds\ ratio} = \exp(\beta)
+\]</span></p>
+<p>たとえば、ILI活動の係数が<span
+class="math inline">\(1.1\)</span>なら、</p>
+<p><span class="math display">\[
+\exp(1.1) \approx 3.0
+\]</span></p>
+<p>です。つまり、ILI活動指標が1標準偏差高い週では、検査陽性のオッズが約3倍になるという読み方です。</p>
+<h2 id="サンプルデータ作成-2">5.3.4　サンプルデータ作成</h2>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">103</span>)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">52</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>week <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>N</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>tested <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">150</span><span class="sc">:</span><span class="dv">450</span>, N, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>ili_activity <span class="ot">&lt;-</span> <span class="fl">0.5</span> <span class="sc">+</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">52</span>) <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.4</span>)</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>ili_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(ili_activity))</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>vacc_coverage <span class="ot">&lt;-</span> <span class="fu">pmin</span>(<span class="fl">0.75</span>, <span class="fu">pmax</span>(<span class="fl">0.25</span>, <span class="fl">0.40</span> <span class="sc">+</span> <span class="fl">0.004</span> <span class="sc">*</span> week <span class="sc">+</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="fl">0.03</span>)))</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>vacc_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(vacc_coverage))</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>season_sin <span class="ot">&lt;-</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">52</span>)</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>season_cos <span class="ot">&lt;-</span> <span class="fu">cos</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> week <span class="sc">/</span> <span class="dv">52</span>)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>X3 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">ili_z =</span> ili_z,</span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> vacc_z,</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_sin =</span> season_sin,</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_cos =</span> season_cos</span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a>beta_true <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">ili_z =</span> <span class="fl">1.10</span>,</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> <span class="sc">-</span><span class="fl">0.45</span>,</span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_sin =</span> <span class="fl">0.60</span>,</span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_cos =</span> <span class="sc">-</span><span class="fl">0.20</span></span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>alpha_true <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">2.0</span></span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>eta <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(alpha_true <span class="sc">+</span> X3 <span class="sc">%*%</span> beta_true)</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plogis</span>(eta)</span>
+<span id="cb39-35"><a href="#cb39-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-36"><a href="#cb39-36" aria-hidden="true" tabindex="-1"></a>positive <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="at">size =</span> tested, <span class="at">prob =</span> p)</span>
+<span id="cb39-37"><a href="#cb39-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-38"><a href="#cb39-38" aria-hidden="true" tabindex="-1"></a>d3 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb39-39"><a href="#cb39-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> week,</span>
+<span id="cb39-40"><a href="#cb39-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">tested =</span> tested,</span>
+<span id="cb39-41"><a href="#cb39-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">positive =</span> positive,</span>
+<span id="cb39-42"><a href="#cb39-42" aria-hidden="true" tabindex="-1"></a>  <span class="at">positivity =</span> positive <span class="sc">/</span> tested,</span>
+<span id="cb39-43"><a href="#cb39-43" aria-hidden="true" tabindex="-1"></a>  <span class="at">ili_z =</span> ili_z,</span>
+<span id="cb39-44"><a href="#cb39-44" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_coverage =</span> vacc_coverage,</span>
+<span id="cb39-45"><a href="#cb39-45" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> vacc_z,</span>
+<span id="cb39-46"><a href="#cb39-46" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_sin =</span> season_sin,</span>
+<span id="cb39-47"><a href="#cb39-47" aria-hidden="true" tabindex="-1"></a>  <span class="at">season_cos =</span> season_cos</span>
+<span id="cb39-48"><a href="#cb39-48" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-49"><a href="#cb39-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-50"><a href="#cb39-50" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d3)</span></code></pre></div>
+<h2 id="stanコード-2">5.3.5　Stanコード</h2>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>stan_code_binomial_logit <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="st">  // 集計された検査データを受け取る。</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="st">  // positive[n]は陽性数、tested[n]は検査数。</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; K;</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[N, K] X;</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; tested;</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; positive;</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは基準log odds。</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="st">  // betaは各説明変数がlog oddsに与える影響。</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a><span class="st">  real alpha;</span></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] beta;</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a><span class="st">  // 事前分布。</span></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a><span class="st">  // ロジットスケールでは極端な係数が非常に大きな確率変化を意味するため、</span></span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a><span class="st">  // normal(0, 1.5)程度の弱情報事前分布を置く。</span></span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a><span class="st">  alpha ~ normal(0, 3);</span></span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a><span class="st">  beta ~ normal(0, 1.5);</span></span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // 尤度。</span></span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // binomial_logitは、成功確率pではなくlogit(p)を直接受け取る。</span></span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a><span class="st">  // inv_logitを明示的に書くより数値的に安定である。</span></span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a><span class="st">  positive ~ binomial_logit(tested, alpha + X * beta);</span></span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a><span class="st">  // etaはlog odds、pは陽性確率。</span></span>
+<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a><span class="st">  // y_repは陽性数の事後予測、log_likはモデル比較用。</span></span>
+<span id="cb40-35"><a href="#cb40-35" aria-hidden="true" tabindex="-1"></a><span class="st">  // odds_ratioは解釈しやすいようにexp(beta)で保存する。</span></span>
+<span id="cb40-36"><a href="#cb40-36" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] eta;</span></span>
+<span id="cb40-37"><a href="#cb40-37" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] p;</span></span>
+<span id="cb40-38"><a href="#cb40-38" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; y_rep;</span></span>
+<span id="cb40-39"><a href="#cb40-39" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] log_lik;</span></span>
+<span id="cb40-40"><a href="#cb40-40" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] odds_ratio;</span></span>
+<span id="cb40-41"><a href="#cb40-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-42"><a href="#cb40-42" aria-hidden="true" tabindex="-1"></a><span class="st">  eta = alpha + X * beta;</span></span>
+<span id="cb40-43"><a href="#cb40-43" aria-hidden="true" tabindex="-1"></a><span class="st">  odds_ratio = exp(beta);</span></span>
+<span id="cb40-44"><a href="#cb40-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-45"><a href="#cb40-45" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb40-46"><a href="#cb40-46" aria-hidden="true" tabindex="-1"></a><span class="st">    p[n] = inv_logit(eta[n]);</span></span>
+<span id="cb40-47"><a href="#cb40-47" aria-hidden="true" tabindex="-1"></a><span class="st">    y_rep[n] = binomial_rng(tested[n], p[n]);</span></span>
+<span id="cb40-48"><a href="#cb40-48" aria-hidden="true" tabindex="-1"></a><span class="st">    log_lik[n] = binomial_lpmf(positive[n] | tested[n], p[n]);</span></span>
+<span id="cb40-49"><a href="#cb40-49" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb40-50"><a href="#cb40-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb40-51"><a href="#cb40-51" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<h2
+id="stanコードのブロック別意図-2">5.3.6　Stanコードのブロック別意図</h2>
+<p><strong><code>data</code>ブロック</strong><br />
+各週の検査数<code>tested</code>と陽性数<code>positive</code>を渡します。陽性率ではなく、陽性数と検査数を分けて渡す点が重要です。これにより、検査数が多い週ほど情報量が多いことをモデルが反映できます。</p>
+<p><strong><code>parameters</code>ブロック</strong><br />
+推定するのは<code>alpha</code>と<code>beta</code>だけです。陽性確率<code>p</code>はパラメータとして直接サンプリングするのではなく、<code>alpha + X * beta</code>から導かれる量として扱います。</p>
+<p><strong><code>model</code>ブロック</strong><br />
+<code>positive ~ binomial_logit(tested, alpha + X * beta)</code>が中心です。これは、各週の陽性数が、検査数<code>tested[n]</code>、陽性確率<code>p[n]</code>の二項分布に従い、その<code>p[n]</code>のロジットが線形予測子で表される、という意味です。</p>
+<p><strong><code>generated quantities</code>ブロック</strong><br />
+<code>p</code>を保存することで、週別の予測陽性率を直接確認できます。<code>y_rep</code>はモデルが再現する陽性数、<code>log_lik</code>は後でLOO-CVなどを使う場合の準備、<code>odds_ratio</code>は係数の実務的な解釈用です。</p>
+<h2 id="rstanで推定-2">5.3.7　RStanで推定</h2>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>stan_data3 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d3),</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">ncol</span>(X3),</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> X3,</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">tested =</span> d3<span class="sc">$</span>tested,</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">positive =</span> d3<span class="sc">$</span>positive</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>fit3 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span>stan,</span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">model_code =</span> stan_code_binomial_logit, <span class="at">data =</span> stan_data3),</span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>    stan_sampling_args</span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a><span class="fu">check_fit</span>(fit3, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;odds_ratio&quot;</span>))</span></code></pre></div>
+<h2 id="出力結果の読み方-2">5.3.8　出力結果の読み方</h2>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>summary3_or <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit3, <span class="at">pars =</span> <span class="st">&quot;odds_ratio&quot;</span>)<span class="sc">$</span>summary</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(summary3_or) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X3)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>summary3_or[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;50%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>, <span class="st">&quot;Rhat&quot;</span>, <span class="st">&quot;n_eff&quot;</span>)]</span></code></pre></div>
+<ul>
+<li><code>ili_z</code>のオッズ比が1より大きい：ILI活動が高い週ほど陽性になりやすい。</li>
+<li><code>vacc_z</code>のオッズ比が1より小さい：接種率が高い週ほど陽性オッズが低い傾向がある。</li>
+<li>季節性項は、年間周期の波を表すために入れている。</li>
+</ul>
+<p>二項ロジスティック回帰の結果は、陽性率監視の平滑化、異常週の検出、流行期の判定、検査体制の調整に使えます。</p>
+<h2 id="モデルチェックと実応用-2">5.3.9　モデルチェックと実応用</h2>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>post3 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit3)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>p_mean3 <span class="ot">&lt;-</span> <span class="fu">apply</span>(post3<span class="sc">$</span>p, <span class="dv">2</span>, mean)</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  d3<span class="sc">$</span>positivity,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  p_mean3,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Observed positivity&quot;</span>,</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">&quot;Posterior mean positivity&quot;</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 複製陽性率を作る。</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>p_rep3 <span class="ot">&lt;-</span> <span class="fu">sweep</span>(post3<span class="sc">$</span>y_rep, <span class="dv">2</span>, d3<span class="sc">$</span>tested, <span class="st">&quot;/&quot;</span>)</span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d3<span class="sc">$</span>positivity,</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> p_rep3[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(p_rep3)), <span class="dv">100</span>), ],</span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;mean&quot;</span></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d3<span class="sc">$</span>positivity,</span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> p_rep3[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(p_rep3)), <span class="dv">100</span>), ],</span>
+<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;sd&quot;</span></span>
+<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>しきい値を使うと、監視業務に近い出力になります。</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 例：各週の陽性確率が10%を超える事後確率。</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>prob_positivity_above_10 <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(post3<span class="sc">$</span>p <span class="sc">&gt;</span> <span class="fl">0.10</span>)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>result3 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> d3<span class="sc">$</span>week,</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">tested =</span> d3<span class="sc">$</span>tested,</span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">positive =</span> d3<span class="sc">$</span>positive,</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">observed_positivity =</span> d3<span class="sc">$</span>positivity,</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">posterior_mean_positivity =</span> p_mean3,</span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">prob_positivity_above_10 =</span> prob_positivity_above_10</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(result3)</span></code></pre></div>
+<p>このような結果は、「陽性率が10%を超えている可能性が高い週」を検出し、検査能力、医療機関への注意喚起、公衆衛生メッセージの発出判断に使えます。</p>
+<hr />
+<h1 id="ロジスティック回帰">5.4　ロジスティック回帰</h1>
+<h2 id="感染症分野での問い-3">5.4.1　感染症分野での問い</h2>
+<p>5.3は週単位の集計データでした。ここでは、個人単位の感染有無を扱います。たとえば、接触者調査、症例対照研究、検査陰性デザイン、血清疫学調査では、個人ごとに感染あり/なし、ワクチン接種あり/なし、曝露あり/なし、年齢、マスク着用などを持ちます。</p>
+<p>問いは次のようになります。</p>
+<blockquote>
+<p>年齢、ワクチン接種、同居内曝露、マスク着用を考慮したとき、個人の感染確率はどう変わるか。</p>
+</blockquote>
+<h2 id="数式-3">5.4.2　数式</h2>
+<p><span class="math display">\[
+y_i \sim \mathrm{Bernoulli}(p_i)
+\]</span></p>
+<p><span class="math display">\[
+\mathrm{logit}(p_i) = \eta_i = \alpha + \beta_1\text{age}_i +
+\beta_2\text{vaccinated}_i + \beta_3\text{exposure}_i +
+\beta_4\text{mask}_i
+\]</span></p>
+<p><span class="math display">\[
+p_i = \frac{1}{1 + \exp(-\eta_i)}
+\]</span></p>
+<p>ここで、</p>
+<ul>
+<li><span class="math inline">\(y_i\)</span>：個人 <span
+class="math inline">\(i\)</span> の感染有無、0または1</li>
+<li><span class="math inline">\(p_i\)</span>：個人 <span
+class="math inline">\(i\)</span> が感染している確率</li>
+<li><span
+class="math inline">\(\beta_2\)</span>：ワクチン接種ありとなしのlog
+odds差</li>
+<li><span
+class="math inline">\(\exp(\beta_2)\)</span>：接種者と非接種者の感染オッズ比</li>
+</ul>
+<h2 id="数式の仕組み-3">5.4.3　数式の仕組み</h2>
+<p>ベルヌーイ分布は、0/1の個人アウトカムに対応します。二項分布が「集計された成功数」を扱うのに対し、ベルヌーイ分布は「1人ごとの成功/失敗」を扱います。</p>
+<p>ロジスティック回帰では、説明変数の効果は確率に対して直接足し算されるのではなく、log
+oddsに対して足し算されます。このため、係数の指数変換がオッズ比になります。</p>
+<p>ワクチン接種の係数が <span class="math inline">\(-0.7\)</span>
+なら、</p>
+<p><span class="math display">\[
+\exp(-0.7) \approx 0.50
+\]</span></p>
+<p>です。これは、他の変数が同じなら、接種者の感染オッズが非接種者の約0.5倍であることを意味します。</p>
+<p>検査陰性デザインなどの文脈では、単純化して、</p>
+<p><span class="math display">\[
+\mathrm{VE} = (1 - \mathrm{OR}) \times 100\%
+\]</span></p>
+<p>と表すことがあります。ただし、この解釈には研究デザインと交絡調整の前提が必要です。</p>
+<h2 id="サンプルデータ作成-3">5.4.4　サンプルデータ作成</h2>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">104</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">800</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>age <span class="ot">&lt;-</span> <span class="fu">round</span>(<span class="fu">runif</span>(N, <span class="dv">18</span>, <span class="dv">85</span>))</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>age_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(age))</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>vaccinated <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="dv">1</span>, <span class="fl">0.65</span>)</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>household_exposure <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="dv">1</span>, <span class="fl">0.25</span>)</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>mask_regular <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="dv">1</span>, <span class="fl">0.55</span>)</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>X4 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">age_z =</span> age_z,</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">vaccinated =</span> vaccinated,</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">household_exposure =</span> household_exposure,</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">mask_regular =</span> mask_regular</span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a>beta_true <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">age_z =</span> <span class="fl">0.20</span>,</span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">vaccinated =</span> <span class="sc">-</span><span class="fl">0.70</span>,</span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">household_exposure =</span> <span class="fl">1.30</span>,</span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">mask_regular =</span> <span class="sc">-</span><span class="fl">0.45</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a>alpha_true <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">1.6</span></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a>eta <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(alpha_true <span class="sc">+</span> X4 <span class="sc">%*%</span> beta_true)</span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plogis</span>(eta)</span>
+<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a>infected <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(N, <span class="dv">1</span>, p)</span>
+<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a>d4 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> age,</span>
+<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a>  <span class="at">age_z =</span> age_z,</span>
+<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a>  <span class="at">vaccinated =</span> vaccinated,</span>
+<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a>  <span class="at">household_exposure =</span> household_exposure,</span>
+<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">mask_regular =</span> mask_regular,</span>
+<span id="cb45-39"><a href="#cb45-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">infected =</span> infected</span>
+<span id="cb45-40"><a href="#cb45-40" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb45-41"><a href="#cb45-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-42"><a href="#cb45-42" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d4)</span>
+<span id="cb45-43"><a href="#cb45-43" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(d4<span class="sc">$</span>infected)</span></code></pre></div>
+<h2 id="stanコード-3">5.4.5　Stanコード</h2>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>stan_code_bernoulli_logit <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="st">  // 個人単位のデータを受け取る。</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a><span class="st">  // yは感染有無で、0または1。</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; K;</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[N, K] X;</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0, upper=1&gt; y;</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは基準log odds。</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="st">  // betaは個人属性や曝露が感染log oddsに与える効果。</span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a><span class="st">  real alpha;</span></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] beta;</span></span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a><span class="st">  // 事前分布。</span></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a><span class="st">  // ロジスティック回帰では係数が大きいと確率が0または1に張り付きやすい。</span></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a><span class="st">  // そのため、弱情報だが極端すぎない事前分布を使う。</span></span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a><span class="st">  alpha ~ normal(0, 3);</span></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a><span class="st">  beta ~ normal(0, 1.5);</span></span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a><span class="st">  // 尤度。</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // bernoulli_logitはlogit(p)を直接受け取る。</span></span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ bernoulli_logit(alpha + X * beta);</span></span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a><span class="st">  // pは個人ごとの感染確率。</span></span>
+<span id="cb46-32"><a href="#cb46-32" aria-hidden="true" tabindex="-1"></a><span class="st">  // y_repは事後予測チェック用の感染有無。</span></span>
+<span id="cb46-33"><a href="#cb46-33" aria-hidden="true" tabindex="-1"></a><span class="st">  // odds_ratioは係数の指数変換。</span></span>
+<span id="cb46-34"><a href="#cb46-34" aria-hidden="true" tabindex="-1"></a><span class="st">  // vaccine_effectiveness_likeは接種係数が2列目であることを前提にしたVE風指標。</span></span>
+<span id="cb46-35"><a href="#cb46-35" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] eta;</span></span>
+<span id="cb46-36"><a href="#cb46-36" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] p;</span></span>
+<span id="cb46-37"><a href="#cb46-37" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0, upper=1&gt; y_rep;</span></span>
+<span id="cb46-38"><a href="#cb46-38" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] odds_ratio;</span></span>
+<span id="cb46-39"><a href="#cb46-39" aria-hidden="true" tabindex="-1"></a><span class="st">  real vaccine_effectiveness_like;</span></span>
+<span id="cb46-40"><a href="#cb46-40" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] log_lik;</span></span>
+<span id="cb46-41"><a href="#cb46-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-42"><a href="#cb46-42" aria-hidden="true" tabindex="-1"></a><span class="st">  eta = alpha + X * beta;</span></span>
+<span id="cb46-43"><a href="#cb46-43" aria-hidden="true" tabindex="-1"></a><span class="st">  odds_ratio = exp(beta);</span></span>
+<span id="cb46-44"><a href="#cb46-44" aria-hidden="true" tabindex="-1"></a><span class="st">  vaccine_effectiveness_like = (1 - exp(beta[2])) * 100;</span></span>
+<span id="cb46-45"><a href="#cb46-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-46"><a href="#cb46-46" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb46-47"><a href="#cb46-47" aria-hidden="true" tabindex="-1"></a><span class="st">    p[n] = inv_logit(eta[n]);</span></span>
+<span id="cb46-48"><a href="#cb46-48" aria-hidden="true" tabindex="-1"></a><span class="st">    y_rep[n] = bernoulli_rng(p[n]);</span></span>
+<span id="cb46-49"><a href="#cb46-49" aria-hidden="true" tabindex="-1"></a><span class="st">    log_lik[n] = bernoulli_lpmf(y[n] | p[n]);</span></span>
+<span id="cb46-50"><a href="#cb46-50" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb46-51"><a href="#cb46-51" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb46-52"><a href="#cb46-52" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<h2
+id="stanコードのブロック別意図-3">5.4.6　Stanコードのブロック別意図</h2>
+<p><strong><code>data</code>ブロック</strong><br />
+個人単位の説明変数行列<code>X</code>と、感染有無<code>y</code>を渡します。<code>y</code>には<code>&lt;lower=0, upper=1&gt;</code>の制約を付け、0/1以外が渡された場合にエラーになるようにしています。</p>
+<p><strong><code>parameters</code>ブロック</strong><br />
+感染確率そのものではなく、log
+oddsを決める<code>alpha</code>と<code>beta</code>を推定します。ロジスティック回帰では、確率は<code>inv_logit(alpha + X * beta)</code>から導きます。</p>
+<p><strong><code>model</code>ブロック</strong><br />
+<code>bernoulli_logit</code>を使い、個人ごとの感染有無をモデル化します。<code>bernoulli(inv_logit(...))</code>と書くこともできますが、<code>bernoulli_logit</code>のほうが数値的に安定です。</p>
+<p><strong><code>generated quantities</code>ブロック</strong><br />
+個人ごとの感染確率<code>p</code>、複製データ<code>y_rep</code>、オッズ比<code>odds_ratio</code>、VE風指標<code>vaccine_effectiveness_like</code>、モデル比較用<code>log_lik</code>を保存します。ここでの<code>vaccine_effectiveness_like</code>は、<code>X4</code>の2列目が<code>vaccinated</code>であることを前提にしています。</p>
+<h2 id="rstanで推定-3">5.4.7　RStanで推定</h2>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>stan_data4 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d4),</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">ncol</span>(X4),</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> X4,</span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d4<span class="sc">$</span>infected</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>fit4 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span>stan,</span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">model_code =</span> stan_code_bernoulli_logit, <span class="at">data =</span> stan_data4),</span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>    stan_sampling_args</span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a><span class="fu">check_fit</span>(fit4, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;odds_ratio&quot;</span>, <span class="st">&quot;vaccine_effectiveness_like&quot;</span>))</span></code></pre></div>
+<h2 id="出力結果の読み方-3">5.4.8　出力結果の読み方</h2>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>summary4_or <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit4, <span class="at">pars =</span> <span class="st">&quot;odds_ratio&quot;</span>)<span class="sc">$</span>summary</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(summary4_or) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X4)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>summary4_or[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;50%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>, <span class="st">&quot;Rhat&quot;</span>, <span class="st">&quot;n_eff&quot;</span>)]</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(fit4, <span class="at">pars =</span> <span class="st">&quot;vaccine_effectiveness_like&quot;</span>)<span class="sc">$</span>summary</span></code></pre></div>
+<ul>
+<li><code>vaccinated</code>のオッズ比が1より小さい：接種者では感染オッズが低い傾向。</li>
+<li><code>household_exposure</code>のオッズ比が1より大きい：同居内曝露がある人では感染オッズが高い。</li>
+<li><code>mask_regular</code>のオッズ比が1より小さい：マスク着用習慣がある人では感染オッズが低い傾向。</li>
+</ul>
+<p>VE風指標の中央値が50なら、「調整済みオッズ比に基づくと、接種により感染オッズが約50%低い」という表現になります。ただし、これは検査陰性デザインなどの適切な研究デザインを仮定した場合に近い解釈であり、単純な観察データでは慎重に扱います。</p>
+<h2 id="モデルチェックと実応用-3">5.4.9　モデルチェックと実応用</h2>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>post4 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit4)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>p_mean4 <span class="ot">&lt;-</span> <span class="fu">apply</span>(post4<span class="sc">$</span>p, <span class="dv">2</span>, mean)</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  p_mean4,</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">breaks =</span> <span class="dv">30</span>,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Posterior mean infection probability&quot;</span>,</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">main =</span> <span class="st">&quot;Predicted infection probabilities&quot;</span></span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d4<span class="sc">$</span>infected,</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> post4<span class="sc">$</span>y_rep[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(post4<span class="sc">$</span>y_rep)), <span class="dv">100</span>), ],</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;mean&quot;</span></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>実応用では、特定の条件を持つ人の感染確率を予測できます。</p>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 例：50歳、接種あり、同居内曝露あり、マスク習慣ありの人。</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>age_mean <span class="ot">&lt;-</span> <span class="fu">mean</span>(d4<span class="sc">$</span>age)</span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>age_sd <span class="ot">&lt;-</span> <span class="fu">sd</span>(d4<span class="sc">$</span>age)</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>new_age_z <span class="ot">&lt;-</span> (<span class="dv">50</span> <span class="sc">-</span> age_mean) <span class="sc">/</span> age_sd</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>new_x <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">age_z =</span> new_age_z,</span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">vaccinated =</span> <span class="dv">1</span>,</span>
+<span id="cb50-9"><a href="#cb50-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">household_exposure =</span> <span class="dv">1</span>,</span>
+<span id="cb50-10"><a href="#cb50-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">mask_regular =</span> <span class="dv">1</span></span>
+<span id="cb50-11"><a href="#cb50-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb50-12"><a href="#cb50-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-13"><a href="#cb50-13" aria-hidden="true" tabindex="-1"></a>eta_new <span class="ot">&lt;-</span> post4<span class="sc">$</span>alpha <span class="sc">+</span> <span class="fu">as.vector</span>(post4<span class="sc">$</span>beta <span class="sc">%*%</span> new_x)</span>
+<span id="cb50-14"><a href="#cb50-14" aria-hidden="true" tabindex="-1"></a>p_new <span class="ot">&lt;-</span> <span class="fu">plogis</span>(eta_new)</span>
+<span id="cb50-15"><a href="#cb50-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-16"><a href="#cb50-16" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(p_new, <span class="at">probs =</span> <span class="fu">c</span>(<span class="fl">0.025</span>, <span class="fl">0.5</span>, <span class="fl">0.975</span>))</span></code></pre></div>
+<p>このような予測は、個人リスク評価、接触者調査の優先順位付け、検査推奨、隔離・待機期間の意思決定補助に使えます。ただし、個人レベルの予測では、欠測、選択バイアス、測定誤差、集団差、データ取得時点の流行状況が大きく影響します。</p>
+<hr />
+<h1 id="ポアソン回帰">5.5　ポアソン回帰</h1>
+<h2 id="感染症分野での問い-4">5.5.1　感染症分野での問い</h2>
+<p>ポアソン回帰は、症例数、死亡数、入院数、集団発生件数などのカウントデータを扱う基本モデルです。感染症分野では、地域ごとに人口が異なるため、単純な症例数比較ではなく、人口を調整した発生率を扱うことが多くあります。</p>
+<p>問いは次のようになります。</p>
+<blockquote>
+<p>地域・週ごとの人口を考慮した上で、移動量、接種率、時間傾向は症例発生率とどう関係しているか。</p>
+</blockquote>
+<h2 id="数式-4">5.5.2　数式</h2>
+<p><span class="math display">\[
+y_n \sim \mathrm{Poisson}(\lambda_n)
+\]</span></p>
+<p><span class="math display">\[
+\log(\lambda_n) = \log(\mathrm{population}_n) + \alpha + X_n\beta
+\]</span></p>
+<p>または、発生率 <span class="math inline">\(r_n\)</span>
+を使って、</p>
+<p><span class="math display">\[
+\lambda_n = \mathrm{population}_n \times r_n
+\]</span></p>
+<p><span class="math display">\[
+\log(r_n) = \alpha + X_n\beta
+\]</span></p>
+<p>と書けます。</p>
+<p>ここで、</p>
+<ul>
+<li><span class="math inline">\(y_n\)</span>：地域・週 <span
+class="math inline">\(n\)</span> の症例数</li>
+<li><span class="math inline">\(\lambda_n\)</span>：期待症例数</li>
+<li><span
+class="math inline">\(\mathrm{population}_n\)</span>：対象人口</li>
+<li><span
+class="math inline">\(\log(\mathrm{population}_n)\)</span>：オフセット</li>
+<li><span
+class="math inline">\(\exp(\beta_k)\)</span>：発生率比、incidence rate
+ratio</li>
+</ul>
+<h2 id="数式の仕組み-4">5.5.3　数式の仕組み</h2>
+<p>ポアソン分布は、一定の時間・地域で発生するカウントを扱う基本分布です。期待症例数
+<span class="math inline">\(\lambda_n\)</span>
+は0以上でなければならないため、ログリンクを使います。</p>
+<p>人口オフセットの役割は重要です。人口が2倍の地域では、同じ発生率でも期待症例数は約2倍になります。そこで、</p>
+<p><span class="math display">\[
+\log(\lambda_n) = \log(\mathrm{population}_n) + \log(r_n)
+\]</span></p>
+<p>と分解し、人口差を既知の補正項として入れます。</p>
+<p>係数 <span class="math inline">\(\beta\)</span>
+を指数変換すると発生率比になります。たとえば、接種率の係数が<span
+class="math inline">\(-0.5\)</span>なら、</p>
+<p><span class="math display">\[
+\exp(-0.5) \approx 0.61
+\]</span></p>
+<p>なので、接種率が1標準偏差高い地域・週では、発生率が約39%低いという読み方になります。</p>
+<h2 id="サンプルデータ作成-4">5.5.4　サンプルデータ作成</h2>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">105</span>)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>n_area <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>n_week <span class="ot">&lt;-</span> <span class="dv">8</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>d5 <span class="ot">&lt;-</span> <span class="fu">expand.grid</span>(</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">area =</span> <span class="dv">1</span><span class="sc">:</span>n_area,</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> <span class="dv">1</span><span class="sc">:</span>n_week</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">nrow</span>(d5)</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>area_population <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">50000</span><span class="sc">:</span><span class="dv">250000</span>, n_area, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>population <span class="ot">&lt;-</span> area_population[d5<span class="sc">$</span>area]</span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>mobility <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(N, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>vacc_coverage <span class="ot">&lt;-</span> <span class="fu">runif</span>(N, <span class="fl">0.35</span>, <span class="fl">0.85</span>)</span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>vacc_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(vacc_coverage))</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>mobility_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(mobility))</span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>week_z <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">scale</span>(d5<span class="sc">$</span>week))</span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>X5 <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">mobility_z =</span> mobility_z,</span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> vacc_z,</span>
+<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">week_z =</span> week_z</span>
+<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-28"><a href="#cb51-28" aria-hidden="true" tabindex="-1"></a>beta_true <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb51-29"><a href="#cb51-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">mobility_z =</span> <span class="fl">0.35</span>,</span>
+<span id="cb51-30"><a href="#cb51-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">vacc_z =</span> <span class="sc">-</span><span class="fl">0.50</span>,</span>
+<span id="cb51-31"><a href="#cb51-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">week_z =</span> <span class="fl">0.20</span></span>
+<span id="cb51-32"><a href="#cb51-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-33"><a href="#cb51-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-34"><a href="#cb51-34" aria-hidden="true" tabindex="-1"></a>alpha_true <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">9.0</span></span>
+<span id="cb51-35"><a href="#cb51-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-36"><a href="#cb51-36" aria-hidden="true" tabindex="-1"></a>eta <span class="ot">&lt;-</span> <span class="fu">log</span>(d5<span class="sc">$</span>population) <span class="sc">+</span> <span class="fu">as.vector</span>(alpha_true <span class="sc">+</span> X5 <span class="sc">%*%</span> beta_true)</span>
+<span id="cb51-37"><a href="#cb51-37" aria-hidden="true" tabindex="-1"></a>lambda <span class="ot">&lt;-</span> <span class="fu">exp</span>(eta)</span>
+<span id="cb51-38"><a href="#cb51-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-39"><a href="#cb51-39" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>cases <span class="ot">&lt;-</span> <span class="fu">rpois</span>(N, lambda)</span>
+<span id="cb51-40"><a href="#cb51-40" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>mobility_z <span class="ot">&lt;-</span> mobility_z</span>
+<span id="cb51-41"><a href="#cb51-41" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>vacc_coverage <span class="ot">&lt;-</span> vacc_coverage</span>
+<span id="cb51-42"><a href="#cb51-42" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>vacc_z <span class="ot">&lt;-</span> vacc_z</span>
+<span id="cb51-43"><a href="#cb51-43" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>week_z <span class="ot">&lt;-</span> week_z</span>
+<span id="cb51-44"><a href="#cb51-44" aria-hidden="true" tabindex="-1"></a>d5<span class="sc">$</span>incidence_per_100k <span class="ot">&lt;-</span> d5<span class="sc">$</span>cases <span class="sc">/</span> d5<span class="sc">$</span>population <span class="sc">*</span> <span class="dv">100000</span></span>
+<span id="cb51-45"><a href="#cb51-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-46"><a href="#cb51-46" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(d5)</span>
+<span id="cb51-47"><a href="#cb51-47" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(d5<span class="sc">$</span>cases)</span></code></pre></div>
+<h2 id="stanコード-4">5.5.5　Stanコード</h2>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>stan_code_poisson_regression <span class="ot">&lt;-</span> <span class="st">&quot;</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="st">data {</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="st">  // 地域・週ごとのカウントデータを受け取る。</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="st">  // log_offsetは人口の対数。yは症例数。</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; N;</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="st">  int&lt;lower=1&gt; K;</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="st">  matrix[N, K] X;</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] log_offset;</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; y;</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a><span class="st">parameters {</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは基準ログ発生率。</span></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a><span class="st">  // betaは説明変数がログ発生率に与える効果。</span></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="st">  real alpha;</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] beta;</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a><span class="st">model {</span></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a><span class="st">  // 事前分布。</span></span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a><span class="st">  // alphaは人口オフセット込みの症例数スケールではなく、ログ発生率側の切片。</span></span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a><span class="st">  // ここではデータ生成に合わせてnormal(-9, 2)としている。</span></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a><span class="st">  alpha ~ normal(-9, 2);</span></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a><span class="st">  beta ~ normal(0, 1);</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a><span class="st">  // 尤度。</span></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="st">  // poisson_logはlog(lambda)を直接受け取る。</span></span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a><span class="st">  // log_offset + alpha + X * beta が各観測のlog(lambda)。</span></span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a><span class="st">  y ~ poisson_log(log_offset + alpha + X * beta);</span></span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a><span class="st">generated quantities {</span></span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a><span class="st">  // etaはlog(lambda)、lambdaは期待症例数。</span></span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a><span class="st">  // y_repは予測症例数、log_likはモデル比較用。</span></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a><span class="st">  // incidence_rate_ratioはexp(beta)で発生率比を保存する。</span></span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] eta;</span></span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] lambda;</span></span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a><span class="st">  array[N] int&lt;lower=0&gt; y_rep;</span></span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[N] log_lik;</span></span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a><span class="st">  vector[K] incidence_rate_ratio;</span></span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a><span class="st">  eta = log_offset + alpha + X * beta;</span></span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a><span class="st">  incidence_rate_ratio = exp(beta);</span></span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a><span class="st">  for (n in 1:N) {</span></span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a><span class="st">    lambda[n] = exp(eta[n]);</span></span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a><span class="st">    y_rep[n] = poisson_log_rng(eta[n]);</span></span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a><span class="st">    log_lik[n] = poisson_log_lpmf(y[n] | eta[n]);</span></span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a><span class="st">  }</span></span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a><span class="st">&quot;</span></span></code></pre></div>
+<h2
+id="stanコードのブロック別意図-4">5.5.6　Stanコードのブロック別意図</h2>
+<p><strong><code>data</code>ブロック</strong><br />
+症例数<code>y</code>、説明変数<code>X</code>、人口オフセット<code>log_offset</code>を渡します。人口は推定するのではなく、既知の曝露量として扱うため、<code>parameters</code>ではなく<code>data</code>に置きます。</p>
+<p><strong><code>parameters</code>ブロック</strong><br />
+基準ログ発生率<code>alpha</code>と、説明変数の係数<code>beta</code>を推定します。ポアソン回帰では、期待症例数<code>lambda</code>を直接パラメータにするのではなく、ログリンクを通じて導きます。</p>
+<p><strong><code>model</code>ブロック</strong><br />
+<code>poisson_log(log_offset + alpha + X * beta)</code>により、ログ期待症例数を直接指定します。<code>poisson(exp(...))</code>と書くより、<code>poisson_log</code>のほうが数値的に安定で、ログ線形モデルとして読みやすいです。</p>
+<p><strong><code>generated quantities</code>ブロック</strong><br />
+期待症例数<code>lambda</code>、複製症例数<code>y_rep</code>、発生率比<code>incidence_rate_ratio</code>を保存します。<code>log_lik</code>は、後で<code>loo</code>パッケージを使ってモデル比較を行う場合に必要になります。</p>
+<h2 id="rstanで推定-4">5.5.7　RStanで推定</h2>
+<div class="sourceCode" id="cb53"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>stan_data5 <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d5),</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">K =</span> <span class="fu">ncol</span>(X5),</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">X =</span> X5,</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">log_offset =</span> <span class="fu">log</span>(d5<span class="sc">$</span>population),</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d5<span class="sc">$</span>cases</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>fit5 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(</span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>  rstan<span class="sc">::</span>stan,</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">model_code =</span> stan_code_poisson_regression, <span class="at">data =</span> stan_data5),</span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>    stan_sampling_args</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a><span class="fu">check_fit</span>(fit5, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta&quot;</span>, <span class="st">&quot;incidence_rate_ratio&quot;</span>))</span></code></pre></div>
+<h2 id="出力結果の読み方-4">5.5.8　出力結果の読み方</h2>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>summary5_irr <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit5, <span class="at">pars =</span> <span class="st">&quot;incidence_rate_ratio&quot;</span>)<span class="sc">$</span>summary</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(summary5_irr) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(X5)</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>summary5_irr[, <span class="fu">c</span>(<span class="st">&quot;mean&quot;</span>, <span class="st">&quot;sd&quot;</span>, <span class="st">&quot;2.5%&quot;</span>, <span class="st">&quot;50%&quot;</span>, <span class="st">&quot;97.5%&quot;</span>, <span class="st">&quot;Rhat&quot;</span>, <span class="st">&quot;n_eff&quot;</span>)]</span></code></pre></div>
+<ul>
+<li><code>mobility_z</code>の発生率比が1より大きい：移動量が高い地域・週ほど症例発生率が高い。</li>
+<li><code>vacc_z</code>の発生率比が1より小さい：接種率が高い地域・週ほど症例発生率が低い。</li>
+<li><code>week_z</code>の発生率比が1より大きい：時間とともに発生率が上昇する傾向がある。</li>
+</ul>
+<h2 id="モデルチェックと実応用-4">5.5.9　モデルチェックと実応用</h2>
+<div class="sourceCode" id="cb55"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>post5 <span class="ot">&lt;-</span> rstan<span class="sc">::</span><span class="fu">extract</span>(fit5)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>lambda_mean5 <span class="ot">&lt;-</span> <span class="fu">apply</span>(post5<span class="sc">$</span>lambda, <span class="dv">2</span>, mean)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  lambda_mean5,</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  d5<span class="sc">$</span>cases,</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">xlab =</span> <span class="st">&quot;Posterior mean expected cases&quot;</span>,</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">ylab =</span> <span class="st">&quot;Observed cases&quot;</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d5<span class="sc">$</span>cases,</span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> post5<span class="sc">$</span>y_rep[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(post5<span class="sc">$</span>y_rep)), <span class="dv">100</span>), ],</span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;mean&quot;</span></span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d5<span class="sc">$</span>cases,</span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> post5<span class="sc">$</span>y_rep[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(post5<span class="sc">$</span>y_rep)), <span class="dv">100</span>), ],</span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;sd&quot;</span></span>
+<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>症例数が医療対応能力を超える確率を計算することもできます。</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 例：各地域・週で症例数が30を超える確率。</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>prob_cases_above_30 <span class="ot">&lt;-</span> <span class="fu">colMeans</span>(post5<span class="sc">$</span>y_rep <span class="sc">&gt;</span> <span class="dv">30</span>)</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>result5 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">area =</span> d5<span class="sc">$</span>area,</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">week =</span> d5<span class="sc">$</span>week,</span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">population =</span> d5<span class="sc">$</span>population,</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">observed_cases =</span> d5<span class="sc">$</span>cases,</span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">posterior_mean_cases =</span> lambda_mean5,</span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">prob_cases_above_30 =</span> prob_cases_above_30</span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(result5)</span></code></pre></div>
+<p>このような出力は、地域別の警戒レベル設定、検査資源配分、外来・病床需要の見積もり、保健所支援の優先順位付けに使えます。</p>
+<p>ただし、感染症カウントデータでは過分散がよく起こります。ポアソン分布では平均と分散が等しいため、観測データのばらつきが大きすぎる場合は、負の二項回帰、地域ランダム効果、週ランダム効果、時系列構造などを検討します。</p>
+<hr />
+<h1 id="chapter-3-モデルチェックのまとめ">Chapter
+3　モデルチェックのまとめ</h1>
+<h2 id="a-mcmc診断">3.A　MCMC診断</h2>
+<p>RStanでモデルを推定したら、まずサンプリングが正常に行われたかを確認します。</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fit5)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>rstan<span class="sc">::</span><span class="fu">check_hmc_diagnostics</span>(fit5)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="fu">traceplot</span>(fit5, <span class="at">pars =</span> <span class="fu">c</span>(<span class="st">&quot;alpha&quot;</span>, <span class="st">&quot;beta[1]&quot;</span>, <span class="st">&quot;beta[2]&quot;</span>))</span></code></pre></div>
+<p>見るべき点は次です。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>診断</th>
+<th>望ましい状態</th>
+<th>問題がある場合の意味</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>R-hat</td>
+<td>1.00に近い。目安として1.01未満</td>
+<td>チェーンが同じ分布に収束していない可能性</td>
+</tr>
+<tr class="even">
+<td>n_eff / ESS</td>
+<td>十分大きい</td>
+<td>事後分布の推定が不安定</td>
+</tr>
+<tr class="odd">
+<td>divergence</td>
+<td>0が望ましい</td>
+<td>事後分布の幾何が難しく、推定が偏る可能性</td>
+</tr>
+<tr class="even">
+<td>treedepth</td>
+<td>上限到達が少ない</td>
+<td>サンプリング効率が悪い可能性</td>
+</tr>
+<tr class="odd">
+<td>BFMI</td>
+<td>低すぎない</td>
+<td>エネルギー方向の探索が悪い可能性</td>
+</tr>
+</tbody>
+</table>
+<p>警告が出た場合、反復数を増やすだけでは根本解決にならないことがあります。感染症データでは、外れ値、過分散、ゼロ過剰、未調整の地域差・週差、強すぎる相関、弱すぎる事前分布が原因になることが多いです。</p>
+<h2 id="b-事後予測チェック">3.B　事後予測チェック</h2>
+<p>事後予測チェックでは、モデルから生成した複製データ<code>y_rep</code>と観測データ<code>y</code>を比較します。</p>
+<p>基本的な考え方は次です。</p>
+<p><span class="math display">\[
+p(\tilde{y} \mid y) = \int p(\tilde{y} \mid \theta) p(\theta \mid y)
+d\theta
+\]</span></p>
+<p>ここで、<span
+class="math inline">\(\tilde{y}\)</span>はモデルから生成した仮想データです。観測データが、複製データの典型的な範囲から大きく外れているなら、モデルは重要な特徴を再現できていない可能性があります。</p>
+<p>例として、ポアソン回帰では平均だけでなく標準偏差を確認します。</p>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d5<span class="sc">$</span>cases,</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> post5<span class="sc">$</span>y_rep[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(post5<span class="sc">$</span>y_rep)), <span class="dv">100</span>), ],</span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;mean&quot;</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>bayesplot<span class="sc">::</span><span class="fu">ppc_stat</span>(</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> d5<span class="sc">$</span>cases,</span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">yrep =</span> post5<span class="sc">$</span>y_rep[<span class="fu">sample</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(post5<span class="sc">$</span>y_rep)), <span class="dv">100</span>), ],</span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">stat =</span> <span class="st">&quot;sd&quot;</span></span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>感染症データで<code>sd</code>が再現できない場合、過分散が疑われます。</p>
+<h2
+id="c-係数ではなく意思決定量まで変換する">3.C　係数ではなく、意思決定量まで変換する</h2>
+<p>Stanの出力には<code>beta</code>のようなモデル内部の係数が含まれます。しかし、実務で重要なのは、しばしば次のような変換後の量です。</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>モデル</th>
+<th>Stan上の係数</th>
+<th>実務上の量</th>
+<th>変換</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>線形回帰、対数アウトカム</td>
+<td><code>beta</code></td>
+<td>率比</td>
+<td><code>exp(beta)</code></td>
+</tr>
+<tr class="even">
+<td>ロジスティック回帰</td>
+<td><code>beta</code></td>
+<td>オッズ比</td>
+<td><code>exp(beta)</code></td>
+</tr>
+<tr class="odd">
+<td>ワクチン効果風解釈</td>
+<td><code>beta_vaccinated</code></td>
+<td>VE風指標</td>
+<td><code>(1 - exp(beta)) * 100</code></td>
+</tr>
+<tr class="even">
+<td>ポアソン回帰</td>
+<td><code>beta</code></td>
+<td>発生率比</td>
+<td><code>exp(beta)</code></td>
+</tr>
+<tr class="odd">
+<td>予測モデル</td>
+<td><code>y_rep</code></td>
+<td>しきい値超過確率</td>
+<td><code>mean(y_rep &gt; threshold)</code></td>
+</tr>
+</tbody>
+</table>
+<p>報告書や論文では、<code>beta = -0.50</code>と書くだけでは伝わりにくいことがあります。感染症対策の文脈では、「発生率比0.61」「症例数30超過確率80%」「陽性率10%超過確率90%」のように、意思決定につながるスケールに変換して示すほうが有用です。</p>
+<h2
+id="d-感染症データで特に注意する点">3.D　感染症データで特に注意する点</h2>
+<p>この章のモデルは基本形です。実データに適用する際は、少なくとも次の点を検討します。</p>
+<ul>
+<li>報告遅れ：発症日、検査日、報告日がずれる。</li>
+<li>曜日効果：週末や休日で検査数・報告数が変わる。</li>
+<li>検査数の変化：陽性数だけを見ると流行と検査体制の変化が混ざる。</li>
+<li>検査対象者の選択：症状の強い人だけが検査されると陽性率が高くなる。</li>
+<li>地域差：人口密度、医療アクセス、年齢構成が異なる。</li>
+<li>年齢構成：重症化・入院・死亡のモデルでは特に重要。</li>
+<li>変異株の交代：感染性・免疫逃避・重症度が変化する。</li>
+<li>ワクチン接種選択：接種者と非接種者の背景が異なる。</li>
+<li>過分散：症例数のばらつきがポアソン分布より大きい。</li>
+<li>ゼロ過剰：症例が0の地域・週が多い。</li>
+<li>時系列自己相関：今週の症例数は前週の症例数と強く関係する。</li>
+</ul>
+<p>次に進むべき拡張は、負の二項回帰、階層モデル、時系列モデル、曜日効果、地域ランダム効果、遅れ効果モデル、測定誤差モデル、事後予測に基づく意思決定分析です。</p>
+<hr />
+<h2 id="chapter-3-補足と文献案内">Chapter 3　補足と文献案内</h2>
+<h3 id="rstanstan公式資料">RStan・Stan公式資料</h3>
+<ul>
+<li><a href="https://mc-stan.org/rstan/reference/rstan.html">RStan
+Reference</a></li>
+<li><a href="https://mc-stan.org/rstan/reference/stan.html">RStan
+<code>stan()</code> Reference</a></li>
+<li><a
+href="https://mc-stan.org/rstan/reference/stanfit-class.html">RStan
+<code>stanfit</code> class</a></li>
+<li><a
+href="https://mc-stan.org/rstan/reference/check_hmc_diagnostics.html">RStan
+<code>check_hmc_diagnostics()</code></a></li>
+<li><a href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan
+Reference Manual: Program Blocks</a></li>
+<li><a
+href="https://mc-stan.org/docs/reference-manual/statements.html">Stan
+Reference Manual: Statements</a></li>
+<li><a
+href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan
+User’s Guide: Regression Models</a></li>
+<li><a
+href="https://mc-stan.org/docs/stan-users-guide/posterior-predictive-checks.html">Stan
+User’s Guide: Posterior Predictive Checks</a></li>
+<li><a
+href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan
+Diagnostics and Warnings</a></li>
+<li><a
+href="https://mc-stan.org/docs/functions-reference/binary_distributions.html">Stan
+Functions Reference: Binary Distributions</a></li>
+<li><a
+href="https://mc-stan.org/docs/functions-reference/bounded_discrete_distributions.html">Stan
+Functions Reference: Bounded Discrete Distributions</a></li>
+<li><a
+href="https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html">Stan
+Functions Reference: Unbounded Discrete Distributions</a></li>
+</ul>
+<h3 id="感染症分野の参考">感染症分野の参考</h3>
+<p>感染症監視データを例にするなら、下水監視、検査陽性率、症例数、入院数、ワクチン有効性評価のデータ構造を理解しておくと、Stanモデルに落とし込みやすくなります。</p>
+<ul>
+<li><a href="https://www.cdc.gov/wastewater/index.html">CDC Wastewater
+Surveillance</a></li>
+<li><a
+href="https://www.cdc.gov/respiratory-viruses/data/activity-levels.html">CDC
+Respiratory Viruses Data</a></li>
+<li><a href="https://www.cdc.gov/mmwr/">CDC MMWR: COVID-19 Vaccine
+Effectiveness examples</a></li>
+<li><a href="https://wwwnc.cdc.gov/eid/">CDC Emerging Infectious
+Diseases Journal</a></li>
+</ul>
+<h3 id="次に進むべき内容">次に進むべき内容</h3>
+<p>Chapter
+3までで、RStanによる基本的な回帰モデルは実装できます。次に進むなら、感染症分野では特に次の拡張が重要です。</p>
+<ol type="1">
+<li>負の二項回帰：症例数の過分散に対応する。</li>
+<li>階層モデル：地域差、施設差、年齢群差を扱う。</li>
+<li>時系列モデル：曜日効果、季節性、自己相関、報告遅れを扱う。</li>
+<li>遅れ効果モデル：曝露から発症、検査、報告までの遅延を扱う。</li>
+<li>測定誤差モデル：検査感度・特異度、下水濃度測定誤差を扱う。</li>
+<li>事後予測と意思決定：病床需要、アウトブレイク警戒、介入効果を評価する。</li>
+</ol>
+</body>
+</html>

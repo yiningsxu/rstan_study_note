@@ -533,14 +533,14 @@ rstan_options(auto_write = TRUE)
     Tools、Linuxでは<code>build-essential</code>系のツールが関係します。</p>
   <h3 id="212rstanのインストール">2.1.2　RStanのインストール</h3>
   <p>通常はR上で次を実行します。</p>
-  <pre><code class="language-r">install.packages(
+  <pre class="stan-code"><code class="language-r">install.packages(
   &quot;rstan&quot;,
   repos = &quot;https://cloud.r-project.org/&quot;,
   dependencies = TRUE
 )
 </code></pre>
   <p>Linuxでnodejs関連のライブラリがない場合に限り、RStan Getting Startedでは次の環境変数を設定する例が示されています。</p>
-  <pre><code class="language-r">Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1)
+  <pre class="stan-code"><code class="language-r">Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1)
 install.packages(
   &quot;rstan&quot;,
   repos = &quot;https://cloud.r-project.org/&quot;,
@@ -548,12 +548,12 @@ install.packages(
 )
 </code></pre>
   <p>推定結果の可視化と事後予測チェックまで行うなら、次も入れておきます。</p>
-  <pre><code class="language-r">install.packages(c(&quot;bayesplot&quot;, &quot;posterior&quot;), dependencies = TRUE)
+  <pre class="stan-code"><code class="language-r">install.packages(c(&quot;bayesplot&quot;, &quot;posterior&quot;), dependencies = TRUE)
 </code></pre>
   <p><code>bayesplot</code>はパラメータ推定値、診断、事後予測チェックの可視化に使えます。</p>
   <h3 id="213読み込みと基本設定">2.1.3　読み込みと基本設定</h3>
   <p>RStanを使うRスクリプトの冒頭には、通常、次を書きます。</p>
-  <pre><code class="language-r">library(rstan)
+  <pre class="stan-code"><code class="language-r">library(rstan)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -563,13 +563,13 @@ rstan_options(auto_write = TRUE)
   </p>
   <h3 id="214インストール確認">2.1.4　インストール確認</h3>
   <p>RStanのインストール確認には、公式Getting Startedで次のテストコードが示されています。</p>
-  <pre><code class="language-r">example(stan_model, package = &quot;rstan&quot;, run.dontrun = TRUE)
+  <pre class="stan-code"><code class="language-r">example(stan_model, package = &quot;rstan&quot;, run.dontrun = TRUE)
 </code></pre>
   <p>このコードでStanモデルがコンパイルされ、サンプリングが始まれば、RStan、C++コンパイラ、Rとの連携は概ね動作しています。</p>
   <h3 id="215最小のrstan実行例">2.1.5　最小のRStan実行例</h3>
   <p>以下は、StanコードをR文字列として渡す最小例です。実務では<code>.stan</code>ファイルに分けるほうが管理しやすいですが、初学段階では<code>model_code</code>を使うと動作確認が簡単です。
   </p>
-  <pre><code class="language-r">library(rstan)
+  <pre class="stan-code"><code class="language-r">library(rstan)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -659,7 +659,7 @@ generated quantities {
 }
 </code></pre>
   <p>これは、R側で次のようなリストを渡すことを意味します。</p>
-  <pre><code class="language-r">stan_data &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data &lt;- list(
   N = length(y),
   y = y
 )
@@ -731,7 +731,7 @@ array[N] real y_rep;       // 長さNの実数配列
   </p>
   <h3 id="228rstanへ渡すデータ">2.2.8　RStanへ渡すデータ</h3>
   <p>RStanでは、Stanの<code>data</code>ブロックで宣言した名前と同じ名前を持つRのリストを渡します。</p>
-  <pre><code class="language-r">stan_data &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data &lt;- list(
   N = nrow(df),
   K = 3,
   X = X,
@@ -794,7 +794,7 @@ array[N] real y_rep;       // 長さNの実数配列
   </p>
   <h2 id="共通準備">共通準備</h2>
   <p>以下をRスクリプトの最初に実行します。</p>
-  <pre><code class="language-r">library(rstan)
+  <pre class="stan-code"><code class="language-r">library(rstan)
 library(bayesplot)
 
 options(mc.cores = parallel::detectCores())
@@ -803,7 +803,7 @@ rstan_options(auto_write = TRUE)
 set.seed(2026)
 </code></pre>
   <p>共通のサンプリング設定も作っておきます。</p>
-  <pre><code class="language-r">stan_sampling_args &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_sampling_args &lt;- list(
   chains = 4,
   iter = 2000,
   warmup = 1000,
@@ -816,7 +816,7 @@ set.seed(2026)
     <code>adapt_delta = 0.95</code>は、divergenceを減らすために使われることがあります。ただし、Stanの診断ガイドでは、<code>adapt_delta</code>や<code>max_treedepth</code>を上げることは最後の手段に近く、まずはモデル、事前分布、パラメータ化、数値安定性を確認することが推奨されています。
   </p>
   <p>共通の診断関数も用意します。</p>
-  <pre><code class="language-r">check_fit &lt;- function(fit, pars) {
+  <pre class="stan-code"><code class="language-r">check_fit &lt;- function(fit, pars) {
   print(fit, pars = pars, probs = c(0.025, 0.5, 0.975))
   rstan::check_hmc_diagnostics(fit)
 }
@@ -841,7 +841,7 @@ set.seed(2026)
     <li>$\sigma$：観測誤差</li>
   </ul>
   <h3 id="312サンプルデータ作成">3.1.2　サンプルデータ作成</h3>
-  <pre><code class="language-r">set.seed(101)
+  <pre class="stan-code"><code class="language-r">set.seed(101)
 
 N &lt;- 40
 week &lt;- 1:N
@@ -915,7 +915,7 @@ generated quantities {
 &quot;
 </code></pre>
   <h3 id="314rstanで推定">3.1.4　RStanで推定</h3>
-  <pre><code class="language-r">stan_data1 &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data1 &lt;- list(
   N = nrow(d1),
   x = d1$log_wastewater_z,
   y = d1$log_cases_per_100k
@@ -932,7 +932,7 @@ fit1 &lt;- do.call(
 check_fit(fit1, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;sigma&quot;))
 </code></pre>
   <h3 id="315モデルチェック">3.1.5　モデルチェック</h3>
-  <pre><code class="language-r"># 事後予測ドロー
+  <pre class="stan-code"><code class="language-r"># 事後予測ドロー
 post1 &lt;- rstan::extract(fit1)
 y_rep1 &lt;- post1$y_rep
 
@@ -971,7 +971,7 @@ abline(0, 1)
     <li>$\beta$：各説明変数の係数</li>
   </ul>
   <h3 id="322サンプルデータ作成">3.2.2　サンプルデータ作成</h3>
-  <pre><code class="language-r">set.seed(102)
+  <pre class="stan-code"><code class="language-r">set.seed(102)
 
 N &lt;- 60
 week &lt;- 1:N
@@ -1060,7 +1060,7 @@ generated quantities {
 &quot;
 </code></pre>
   <h3 id="324rstanで推定">3.2.4　RStanで推定</h3>
-  <pre><code class="language-r">stan_data2 &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data2 &lt;- list(
   N = nrow(d2),
   K = ncol(X2),
   X = X2,
@@ -1081,12 +1081,12 @@ check_fit(
 )
 </code></pre>
   <h3 id="325係数名を付けて要約する">3.2.5　係数名を付けて要約する</h3>
-  <pre><code class="language-r">summary2 &lt;- summary(fit2, pars = &quot;beta&quot;)$summary
+  <pre class="stan-code"><code class="language-r">summary2 &lt;- summary(fit2, pars = &quot;beta&quot;)$summary
 rownames(summary2) &lt;- colnames(X2)
 summary2[, c(&quot;mean&quot;, &quot;sd&quot;, &quot;2.5%&quot;, &quot;50%&quot;, &quot;97.5%&quot;, &quot;Rhat&quot;, &quot;n_eff&quot;)]
 </code></pre>
   <h3 id="326モデルチェック">3.2.6　モデルチェック</h3>
-  <pre><code class="language-r">post2 &lt;- rstan::extract(fit2)
+  <pre class="stan-code"><code class="language-r">post2 &lt;- rstan::extract(fit2)
 y_rep2 &lt;- post2$y_rep
 
 bayesplot::ppc_dens_overlay(
@@ -1126,7 +1126,7 @@ abline(0, 1)
     <li>$p_n$：週$n$の陽性確率</li>
   </ul>
   <h3 id="332サンプルデータ作成">3.3.2　サンプルデータ作成</h3>
-  <pre><code class="language-r">set.seed(103)
+  <pre class="stan-code"><code class="language-r">set.seed(103)
 
 N &lt;- 52
 week &lt;- 1:N
@@ -1216,7 +1216,7 @@ generated quantities {
 &quot;
 </code></pre>
   <h3 id="334rstanで推定">3.3.4　RStanで推定</h3>
-  <pre><code class="language-r">stan_data3 &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data3 &lt;- list(
   N = nrow(d3),
   K = ncol(X3),
   X = X3,
@@ -1235,7 +1235,7 @@ fit3 &lt;- do.call(
 check_fit(fit3, pars = c(&quot;alpha&quot;, &quot;beta&quot;))
 </code></pre>
   <h3 id="335陽性率の予測とモデルチェック">3.3.5　陽性率の予測とモデルチェック</h3>
-  <pre><code class="language-r">post3 &lt;- rstan::extract(fit3)
+  <pre class="stan-code"><code class="language-r">post3 &lt;- rstan::extract(fit3)
 
 p_mean3 &lt;- apply(post3$p, 2, mean)
 
@@ -1264,7 +1264,7 @@ bayesplot::ppc_stat(
 </code></pre>
   <h3 id="336解釈">3.3.6　解釈</h3>
   <p>二項ロジスティック回帰では、係数はロジットスケールです。<code>exp(beta[k])</code>を取ると、説明変数が1単位増えたときのオッズ比になります。</p>
-  <pre><code class="language-r">beta_draws3 &lt;- post3$beta
+  <pre class="stan-code"><code class="language-r">beta_draws3 &lt;- post3$beta
 or_draws3 &lt;- exp(beta_draws3)
 
 or_summary3 &lt;- apply(
@@ -1290,7 +1290,7 @@ or_summary3
     \mathrm{logit}(p_i) = \alpha + X_i \beta
     $$</p>
   <h3 id="342サンプルデータ作成">3.4.2　サンプルデータ作成</h3>
-  <pre><code class="language-r">set.seed(104)
+  <pre class="stan-code"><code class="language-r">set.seed(104)
 
 N &lt;- 800
 
@@ -1374,7 +1374,7 @@ generated quantities {
 &quot;
 </code></pre>
   <h3 id="344rstanで推定">3.4.4　RStanで推定</h3>
-  <pre><code class="language-r">stan_data4 &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data4 &lt;- list(
   N = nrow(d4),
   K = ncol(X4),
   X = X4,
@@ -1392,7 +1392,7 @@ fit4 &lt;- do.call(
 check_fit(fit4, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;odds_ratio&quot;))
 </code></pre>
   <h3 id="345オッズ比を名前付きで要約">3.4.5　オッズ比を名前付きで要約</h3>
-  <pre><code class="language-r">post4 &lt;- rstan::extract(fit4)
+  <pre class="stan-code"><code class="language-r">post4 &lt;- rstan::extract(fit4)
 
 or_summary4 &lt;- apply(
   post4$odds_ratio,
@@ -1405,7 +1405,7 @@ colnames(or_summary4) &lt;- colnames(X4)
 or_summary4
 </code></pre>
   <h3 id="346モデルチェック">3.4.6　モデルチェック</h3>
-  <pre><code class="language-r">p_mean4 &lt;- apply(post4$p, 2, mean)
+  <pre class="stan-code"><code class="language-r">p_mean4 &lt;- apply(post4$p, 2, mean)
 
 # 予測確率の分布
 hist(
@@ -1432,7 +1432,7 @@ mean(pred_class == d4$infected)
   </p>
   <p>COVID-19ワクチン有効性解析では、症例患者と対照患者における接種有無を比較し、多変量ロジスティック回帰でオッズ比を推定し、ワクチン有効性を$(1 - \mathrm{adjusted\ OR}) \times
     100\%$として計算する方法が用いられます。ベイズモデルでも、接種効果をワクチン有効性風に表すなら、事後ドローごとに次のように計算できます。</p>
-  <pre><code class="language-r"># vaccinated列の位置
+  <pre class="stan-code"><code class="language-r"># vaccinated列の位置
 j_vacc &lt;- which(colnames(X4) == &quot;vaccinated&quot;)
 
 ve_draws &lt;- (1 - exp(post4$beta[, j_vacc])) * 100
@@ -1453,7 +1453,7 @@ quantile(ve_draws, probs = c(0.025, 0.5, 0.975))
     $$</p>
   <p>ここで、$\log(\mathrm{population}_n)$はオフセットです。</p>
   <h3 id="352サンプルデータ作成">3.5.2　サンプルデータ作成</h3>
-  <pre><code class="language-r">set.seed(105)
+  <pre class="stan-code"><code class="language-r">set.seed(105)
 
 n_area &lt;- 20
 n_week &lt;- 8
@@ -1542,7 +1542,7 @@ generated quantities {
 &quot;
 </code></pre>
   <h3 id="354rstanで推定">3.5.4　RStanで推定</h3>
-  <pre><code class="language-r">stan_data5 &lt;- list(
+  <pre class="stan-code"><code class="language-r">stan_data5 &lt;- list(
   N = nrow(d5),
   K = ncol(X5),
   X = X5,
@@ -1561,7 +1561,7 @@ fit5 &lt;- do.call(
 check_fit(fit5, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;incidence_rate_ratio&quot;))
 </code></pre>
   <h3 id="355発生率比を要約する">3.5.5　発生率比を要約する</h3>
-  <pre><code class="language-r">post5 &lt;- rstan::extract(fit5)
+  <pre class="stan-code"><code class="language-r">post5 &lt;- rstan::extract(fit5)
 
 irr_summary5 &lt;- apply(
   post5$incidence_rate_ratio,
@@ -1576,7 +1576,7 @@ irr_summary5
   <p><code>exp(beta)</code>は発生率比、つまりincidence rate
     ratioです。たとえば、<code>vacc_z</code>の発生率比が1より小さければ、ワクチン接種率が高い地域・週ほど、人口を調整した症例発生率が低い傾向を示します。</p>
   <h3 id="356モデルチェック">3.5.6　モデルチェック</h3>
-  <pre><code class="language-r">lambda_mean5 &lt;- apply(post5$lambda, 2, mean)
+  <pre class="stan-code"><code class="language-r">lambda_mean5 &lt;- apply(post5$lambda, 2, mean)
 
 plot(
   lambda_mean5,
@@ -1604,7 +1604,7 @@ bayesplot::ppc_stat(
   <h2 id="36モデルチェックのまとめ">3.6　モデルチェックのまとめ</h2>
   <p>RStanで回帰モデルを推定したら、最低限、次を確認します。</p>
   <h3 id="361mcmc診断">3.6.1　MCMC診断</h3>
-  <pre><code class="language-r">print(fit5)
+  <pre class="stan-code"><code class="language-r">print(fit5)
 rstan::check_hmc_diagnostics(fit5)
 traceplot(fit5, pars = c(&quot;alpha&quot;, &quot;beta[1]&quot;, &quot;beta[2]&quot;))
 </code></pre>
@@ -1612,7 +1612,7 @@ traceplot(fit5, pars = c(&quot;alpha&quot;, &quot;beta[1]&quot;, &quot;beta[2]&q
     treedepth、BFMIです。Stanの診断ガイドでは、警告の多くはモデル上の重要な問題を示しており、警告を見た場合は意味を理解するまで推定値をそのまま信頼すべきではないと説明されています。</p>
   <h3 id="362事後予測チェック">3.6.2　事後予測チェック</h3>
   <p>各モデルで<code>generated quantities</code>に<code>y_rep</code>を入れました。これにより、観測データとモデルから生成した複製データを比較できます。</p>
-  <pre><code class="language-r">post &lt;- rstan::extract(fit5)
+  <pre class="stan-code"><code class="language-r">post &lt;- rstan::extract(fit5)
 y_rep &lt;- post$y_rep
 
 bayesplot::ppc_stat(
@@ -1630,15 +1630,15 @@ bayesplot::ppc_stat(
   <p>もし元データを複製データの中から簡単に見分けられるなら、モデルに問題がある可能性があります。</p>
   <h3 id="363係数の解釈">3.6.3　係数の解釈</h3>
   <p>線形回帰では、係数はアウトカムのスケールで解釈します。</p>
-  <pre><code class="language-r"># 線形回帰
+  <pre class="stan-code"><code class="language-r"># 線形回帰
 beta
 </code></pre>
   <p>ロジスティック回帰では、指数変換してオッズ比にします。</p>
-  <pre><code class="language-r"># ロジスティック回帰
+  <pre class="stan-code"><code class="language-r"># ロジスティック回帰
 odds_ratio = exp(beta)
 </code></pre>
   <p>ポアソン回帰では、指数変換して発生率比にします。</p>
-  <pre><code class="language-r"># ポアソン回帰
+  <pre class="stan-code"><code class="language-r"># ポアソン回帰
 incidence_rate_ratio = exp(beta)
 </code></pre>
   <h3 id="364感染症データで特に注意する点">3.6.4　感染症データで特に注意する点</h3>
