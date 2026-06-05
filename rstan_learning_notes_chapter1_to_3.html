@@ -1,155 +1,255 @@
 <!doctype html>
 <html lang="ja">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RStan学習ノート：Chapter 1〜3</title>
   <style>
-:root { color-scheme: light; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-  line-height: 1.75;
-  color: #1f2933;
-  background: #ffffff;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
-}
-h1, h2, h3, h4 { line-height: 1.35; margin-top: 2.1em; scroll-margin-top: 1rem; }
-h1 { border-bottom: 2px solid #d6d9de; padding-bottom: .35em; }
-h2 { border-bottom: 1px solid #e5e7eb; padding-bottom: .25em; }
-a { color: #0f5e9c; text-decoration: none; }
-a:hover { text-decoration: underline; }
-pre {
-  background: #f6f8fa;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 1rem;
-  overflow-x: auto;
-}
-code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.92em;
-}
-p code, li code {
-  background: #f3f4f6;
-  padding: 0.1rem 0.25rem;
-  border-radius: 4px;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-}
-th, td {
-  border: 1px solid #d6d9de;
-  padding: .55rem .7rem;
-  vertical-align: top;
-}
-th { background: #f6f8fa; }
-blockquote {
-  border-left: 4px solid #c7d2fe;
-  margin-left: 0;
-  padding: .6rem 1rem;
-  background: #f8fafc;
-}
-hr { border: none; border-top: 1px solid #e5e7eb; margin: 2rem 0; }
-@media print {
-  body { max-width: none; padding: 1rem; }
-  pre { white-space: pre-wrap; }
-}
-</style>
-  <script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      displayMath: [['$$', '$$'], ['\\[', '\\]']],
-      processEscapes: true
+    :root {
+      color-scheme: light;
     }
-  };
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      line-height: 1.75;
+      color: #1f2933;
+      background: #ffffff;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      line-height: 1.35;
+      margin-top: 2.1em;
+      scroll-margin-top: 1rem;
+    }
+
+    h1 {
+      border-bottom: 2px solid #d6d9de;
+      padding-bottom: .35em;
+    }
+
+    h2 {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: .25em;
+    }
+
+    a {
+      color: #0f5e9c;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    pre {
+      background: #f6f8fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    pre.stan-code {
+      background: #111827;
+      border-color: #374151;
+      color: #e5e7eb;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    pre.stan-code code {
+      color: inherit;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    p code,
+    li code {
+      background: #f3f4f6;
+      padding: 0.1rem 0.25rem;
+      border-radius: 4px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1rem 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #d6d9de;
+      padding: .55rem .7rem;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f6f8fa;
+    }
+
+    blockquote {
+      border-left: 4px solid #c7d2fe;
+      margin-left: 0;
+      padding: .6rem 1rem;
+      background: #f8fafc;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 2rem 0;
+    }
+
+    @media print {
+      body {
+        max-width: none;
+        padding: 1rem;
+      }
+
+      pre {
+        white-space: pre-wrap;
+      }
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        processEscapes: true
+      }
+    };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
+
 <body>
-<h1 id="rstan学習ノート：chapter1〜3">RStan学習ノート：Chapter 1〜3</h1>
-<p>本ノートは、RStan公式リファレンス、Stan Reference Manual、Stan User's Guideを確認した上で、RStanを用いた統計モデリングの導入から基本的な回帰モデルの実装までをまとめたものです。Chapter 3では、感染症分野で実際に頻出するデータ構造を意識したサンプルデータとRStanコードを提示します。サンプルデータは再現可能なシミュレーションデータであり、実患者データではありません。</p>
-<p>参照した主な公式資料は、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan Reference</a>、<a href="https://mc-stan.org/rstan/reference/stan.html">RStan <code>stan()</code> Reference</a>、<a href="https://mc-stan.org/docs/reference-manual/">Stan Reference Manual</a>、<a href="https://mc-stan.org/docs/stan-users-guide/">Stan User's Guide</a>、<a href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan Diagnostics and Warnings</a>です。</p>
-<h2 id="目次">目次</h2>
-<ul>
-<li><a href="#chapter1%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%A8stan%E3%81%AE%E6%A6%82%E8%A6%81">Chapter 1　統計モデリングとStanの概要</a><ul>
-<li><a href="#11%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%A8%E3%81%AF">1.1　統計モデリングとは</a></li>
-<li><a href="#12%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%AE%E7%9B%AE%E7%9A%84">1.2　統計モデリングの目的</a></li>
-<li><a href="#13%E7%A2%BA%E7%8E%87%E7%9A%84%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0%E8%A8%80%E8%AA%9E">1.3　確率的プログラミング言語</a></li>
-<li><a href="#14%E3%81%AA%E3%81%9Cstan%E3%81%AA%E3%81%AE%E3%81%8B">1.4　なぜStanなのか？</a></li>
-<li><a href="#15%E3%81%AA%E3%81%9Crstan%E3%81%AA%E3%81%AE%E3%81%8B">1.5　なぜRStanなのか？</a></li>
-<li><a href="#chapter1%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">補足と文献案内</a></li>
-</ul>
-</li>
-<li><a href="#chapter2stan%E3%81%A8rstan%E3%82%92%E3%81%AF%E3%81%98%E3%82%81%E3%82%88%E3%81%86">Chapter 2　StanとRStanをはじめよう</a><ul>
-<li><a href="#21stan%E3%81%A8rstan%E3%81%AE%E6%BA%96%E5%82%99">2.1　StanとRStanの準備</a></li>
-<li><a href="#22stan%E3%81%AE%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E6%96%87%E6%B3%95">2.2　Stanの基本的な文法</a></li>
-<li><a href="#23%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">2.3　補足と文献案内</a></li>
-</ul>
-</li>
-<li><a href="#chapter3%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E5%9B%9E%E5%B8%B0%E3%81%A8%E3%83%A2%E3%83%87%E3%83%AB%E3%81%AE%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF">Chapter 3　基本的な回帰とモデルのチェック</a><ul>
-<li><a href="#31%E5%8D%98%E5%9B%9E%E5%B8%B0">3.1　単回帰</a></li>
-<li><a href="#32%E9%87%8D%E5%9B%9E%E5%B8%B0">3.2　重回帰</a></li>
-<li><a href="#33%E4%BA%8C%E9%A0%85%E3%83%AD%E3%82%B8%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF%E5%9B%9E%E5%B8%B0">3.3　二項ロジスティック回帰</a></li>
-<li><a href="#34%E3%83%AD%E3%82%B8%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF%E5%9B%9E%E5%B8%B0">3.4　ロジスティック回帰</a></li>
-<li><a href="#35%E3%83%9D%E3%82%A2%E3%82%BD%E3%83%B3%E5%9B%9E%E5%B8%B0">3.5　ポアソン回帰</a></li>
-<li><a href="#36%E3%83%A2%E3%83%87%E3%83%AB%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%81%AE%E3%81%BE%E3%81%A8%E3%82%81">3.6　モデルチェックのまとめ</a></li>
-<li><a href="#37%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">3.7　補足と文献案内</a></li>
-</ul>
-</li>
-</ul>
-<hr />
-<h1 id="chapter1統計モデリングとstanの概要">Chapter 1　統計モデリングとStanの概要</h1>
-<h2 id="この章の到達目標">この章の到達目標</h2>
-<p>この章の目的は、RStanの使い方に入る前に、そもそも<strong>統計モデリングとは何か</strong>、<strong>Stanは何をする言語なのか</strong>、<strong>RStanはStanをRからどう使えるようにするのか</strong>を整理することです。</p>
-<p>Stan Reference Manualは、Stanを「確率モデルをコード化するためのプログラミング言語、モデルを当てはめ予測するための推論アルゴリズム、結果を評価するための事後解析ツール」を扱う体系として位置づけています。RStanは、そのStanをRから使うためのインターフェースです。</p>
-<p>この章では、次の考え方を順に確認します。</p>
-<ol>
-<li>統計モデルとは、観測データを確率的に説明するための仮定体系である。</li>
-<li>統計モデリングの目的は、推定だけでなく、予測、説明、不確実性評価、モデルチェック、意思決定支援まで含む。</li>
-<li>Stanは、統計モデルをプログラムとして書き、その対数密度に基づいて推論する確率的プログラミング言語である。</li>
-<li>RStanは、StanモデルをRからコンパイル・実行・要約するためのインターフェースである。</li>
-</ol>
-<h2 id="11統計モデリングとは">1.1　統計モデリングとは</h2>
-<h3 id="111統計モデルの基本的な考え方">1.1.1　統計モデルの基本的な考え方</h3>
-<p><strong>統計モデリング</strong>とは、観測されたデータがどのような確率的仕組みによって生じたのかを、数式やプログラムで表現する作業です。たとえば、身長、売上、クリック率、故障件数、感染者数、顧客離脱、試験点数などのデータに対して、次のような問いを扱います。</p>
-<ul>
-<li>このデータはどのような確率分布から発生したと考えるのが妥当か。</li>
-<li>どの変数が結果に影響しているのか。</li>
-<li>未知の量をどの程度の不確実性で推定できるのか。</li>
-<li>まだ観測されていない将来の値をどの程度予測できるのか。</li>
-</ul>
-<p>統計モデルでは、通常、次の3つを区別します。</p>
-<p><strong>観測データ</strong><br />
-すでに観測された値です。Stanでは主に<code>data</code>ブロックに入ります。たとえば、観測数<code>N</code>、応答変数<code>y</code>、説明変数<code>x</code>などです。</p>
-<p><strong>未知パラメータ</strong><br />
-データから推定したい量です。平均、分散、回帰係数、階層モデルの群間ばらつき、潜在変数などが含まれます。Stanでは主に<code>parameters</code>ブロックに書きます。</p>
-<p><strong>確率構造</strong><br />
-データとパラメータの関係を確率分布で書いたものです。たとえば、<code>y ~ normal(mu, sigma)</code>は「観測値<code>y</code>は平均<code>mu</code>、標準偏差<code>sigma</code>の正規分布に従う」という仮定を表します。ただしStanの<code>~</code>記法は、乱数を発生させる命令ではなく、モデルの対数密度に項を追加するための記法です。</p>
-<h3 id="112統計モデルは「真実」ではなく「仮定の明示」">1.1.2　統計モデルは「真実」ではなく「仮定の明示」</h3>
-<p>統計モデルは現実そのものではなく、現実を分析可能な形に簡略化した<strong>仮定の集合</strong>です。モデルは、現実の全要素を完全に再現するものではありません。むしろ、分析目的に照らして重要な構造を取り出し、不確実性を含めて表現するための道具です。</p>
-<p>たとえば、正規分布モデル</p>
-<pre><code class="language-stan">y ~ normal(mu, sigma);
-</code></pre>
-<p>は、「データのばらつきは正規分布で近似できる」という仮定を置いています。この仮定が妥当かどうかは、推定後に残差、事後予測、モデル比較、外部データでの予測性能などを通じて検討します。</p>
-<p>Stan User's Guideには、回帰モデル、時系列モデル、欠測データ、打ち切り・切断データ、混合モデル、測定誤差、ガウス過程、ODE、サバイバルモデルなど、多様なモデル例が含まれています。これは、統計モデリングが単なる「回帰分析」だけではなく、データ生成過程を明示的に記述する広い枠組みであることを示しています。</p>
-<h3 id="113ベイズ統計における統計モデル">1.1.3　ベイズ統計における統計モデル</h3>
-<p>Stanはベイズ推論に強いツールです。ベイズ統計では、未知パラメータを固定された未知量として扱いつつ、その不確実性を確率分布で表します。基本形は次のようになります。</p>
-<p>$$
-p(\theta \mid y) \propto p(y \mid \theta)p(\theta)
-$$</p>
-<p>ここで、$\theta$は未知パラメータ、$y$は観測データです。</p>
-<p><strong>尤度 $p(y \mid \theta)$</strong> は、パラメータが与えられたときに観測データがどれくらい起こりやすいかを表します。</p>
-<p><strong>事前分布 $p(\theta)$</strong> は、データを見る前にパラメータについて持っている知識や制約を表します。</p>
-<p><strong>事後分布 $p(\theta \mid y)$</strong> は、データを観測した後のパラメータの不確実性を表します。</p>
-<p>Stan言語は、データで条件づけられた対数密度関数を定義します。ベイズモデルでは、この対数密度は典型的には事後分布に比例する非正規化対数密度です。</p>
-<h3 id="114最小例：正規分布モデル">1.1.4　最小例：正規分布モデル</h3>
-<p>観測値<code>y</code>が正規分布に従うと仮定し、平均<code>mu</code>と標準偏差<code>sigma</code>を推定するモデルは、Stanでは次のように書けます。</p>
-<pre><code class="language-stan">data {
+  <h1 id="rstan学習ノート：chapter1〜3">RStan学習ノート：Chapter 1〜3</h1>
+  <p>本ノートは、RStan公式リファレンス、Stan Reference Manual、Stan User's
+    Guideを確認した上で、RStanを用いた統計モデリングの導入から基本的な回帰モデルの実装までをまとめたものです。Chapter
+    3では、感染症分野で実際に頻出するデータ構造を意識したサンプルデータとRStanコードを提示します。サンプルデータは再現可能なシミュレーションデータであり、実患者データではありません。</p>
+  <p>参照した主な公式資料は、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan Reference</a>、<a
+      href="https://mc-stan.org/rstan/reference/stan.html">RStan <code>stan()</code> Reference</a>、<a
+      href="https://mc-stan.org/docs/reference-manual/">Stan Reference Manual</a>、<a
+      href="https://mc-stan.org/docs/stan-users-guide/">Stan User's Guide</a>、<a
+      href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan Diagnostics and Warnings</a>です。</p>
+  <h2 id="目次">目次</h2>
+  <ul>
+    <li><a
+        href="#chapter1%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%A8stan%E3%81%AE%E6%A6%82%E8%A6%81">Chapter
+        1　統計モデリングとStanの概要</a>
+      <ul>
+        <li><a
+            href="#11%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%A8%E3%81%AF">1.1　統計モデリングとは</a>
+        </li>
+        <li><a
+            href="#12%E7%B5%B1%E8%A8%88%E3%83%A2%E3%83%87%E3%83%AA%E3%83%B3%E3%82%B0%E3%81%AE%E7%9B%AE%E7%9A%84">1.2　統計モデリングの目的</a>
+        </li>
+        <li><a
+            href="#13%E7%A2%BA%E7%8E%87%E7%9A%84%E3%83%97%E3%83%AD%E3%82%B0%E3%83%A9%E3%83%9F%E3%83%B3%E3%82%B0%E8%A8%80%E8%AA%9E">1.3　確率的プログラミング言語</a>
+        </li>
+        <li><a href="#14%E3%81%AA%E3%81%9Cstan%E3%81%AA%E3%81%AE%E3%81%8B">1.4　なぜStanなのか？</a></li>
+        <li><a href="#15%E3%81%AA%E3%81%9Crstan%E3%81%AA%E3%81%AE%E3%81%8B">1.5　なぜRStanなのか？</a></li>
+        <li><a href="#chapter1%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">補足と文献案内</a></li>
+      </ul>
+    </li>
+    <li><a href="#chapter2stan%E3%81%A8rstan%E3%82%92%E3%81%AF%E3%81%98%E3%82%81%E3%82%88%E3%81%86">Chapter
+        2　StanとRStanをはじめよう</a>
+      <ul>
+        <li><a href="#21stan%E3%81%A8rstan%E3%81%AE%E6%BA%96%E5%82%99">2.1　StanとRStanの準備</a></li>
+        <li><a href="#22stan%E3%81%AE%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E6%96%87%E6%B3%95">2.2　Stanの基本的な文法</a></li>
+        <li><a href="#23%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">2.3　補足と文献案内</a></li>
+      </ul>
+    </li>
+    <li><a
+        href="#chapter3%E5%9F%BA%E6%9C%AC%E7%9A%84%E3%81%AA%E5%9B%9E%E5%B8%B0%E3%81%A8%E3%83%A2%E3%83%87%E3%83%AB%E3%81%AE%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF">Chapter
+        3　基本的な回帰とモデルのチェック</a>
+      <ul>
+        <li><a href="#31%E5%8D%98%E5%9B%9E%E5%B8%B0">3.1　単回帰</a></li>
+        <li><a href="#32%E9%87%8D%E5%9B%9E%E5%B8%B0">3.2　重回帰</a></li>
+        <li><a
+            href="#33%E4%BA%8C%E9%A0%85%E3%83%AD%E3%82%B8%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF%E5%9B%9E%E5%B8%B0">3.3　二項ロジスティック回帰</a>
+        </li>
+        <li><a
+            href="#34%E3%83%AD%E3%82%B8%E3%82%B9%E3%83%86%E3%82%A3%E3%83%83%E3%82%AF%E5%9B%9E%E5%B8%B0">3.4　ロジスティック回帰</a>
+        </li>
+        <li><a href="#35%E3%83%9D%E3%82%A2%E3%82%BD%E3%83%B3%E5%9B%9E%E5%B8%B0">3.5　ポアソン回帰</a></li>
+        <li><a
+            href="#36%E3%83%A2%E3%83%87%E3%83%AB%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%81%AE%E3%81%BE%E3%81%A8%E3%82%81">3.6　モデルチェックのまとめ</a>
+        </li>
+        <li><a href="#37%E8%A3%9C%E8%B6%B3%E3%81%A8%E6%96%87%E7%8C%AE%E6%A1%88%E5%86%85">3.7　補足と文献案内</a></li>
+      </ul>
+    </li>
+  </ul>
+  <hr />
+  <h1 id="chapter1統計モデリングとstanの概要">Chapter 1　統計モデリングとStanの概要</h1>
+  <h2 id="この章の到達目標">この章の到達目標</h2>
+  <p>
+    この章の目的は、RStanの使い方に入る前に、そもそも<strong>統計モデリングとは何か</strong>、<strong>Stanは何をする言語なのか</strong>、<strong>RStanはStanをRからどう使えるようにするのか</strong>を整理することです。
+  </p>
+  <p>Stan Reference
+    Manualは、Stanを「確率モデルをコード化するためのプログラミング言語、モデルを当てはめ予測するための推論アルゴリズム、結果を評価するための事後解析ツール」を扱う体系として位置づけています。RStanは、そのStanをRから使うためのインターフェースです。
+  </p>
+  <p>この章では、次の考え方を順に確認します。</p>
+  <ol>
+    <li>統計モデルとは、観測データを確率的に説明するための仮定体系である。</li>
+    <li>統計モデリングの目的は、推定だけでなく、予測、説明、不確実性評価、モデルチェック、意思決定支援まで含む。</li>
+    <li>Stanは、統計モデルをプログラムとして書き、その対数密度に基づいて推論する確率的プログラミング言語である。</li>
+    <li>RStanは、StanモデルをRからコンパイル・実行・要約するためのインターフェースである。</li>
+  </ol>
+  <h2 id="11統計モデリングとは">1.1　統計モデリングとは</h2>
+  <h3 id="111統計モデルの基本的な考え方">1.1.1　統計モデルの基本的な考え方</h3>
+  <p>
+    <strong>統計モデリング</strong>とは、観測されたデータがどのような確率的仕組みによって生じたのかを、数式やプログラムで表現する作業です。たとえば、身長、売上、クリック率、故障件数、感染者数、顧客離脱、試験点数などのデータに対して、次のような問いを扱います。
+  </p>
+  <ul>
+    <li>このデータはどのような確率分布から発生したと考えるのが妥当か。</li>
+    <li>どの変数が結果に影響しているのか。</li>
+    <li>未知の量をどの程度の不確実性で推定できるのか。</li>
+    <li>まだ観測されていない将来の値をどの程度予測できるのか。</li>
+  </ul>
+  <p>統計モデルでは、通常、次の3つを区別します。</p>
+  <p><strong>観測データ</strong><br />
+    すでに観測された値です。Stanでは主に<code>data</code>ブロックに入ります。たとえば、観測数<code>N</code>、応答変数<code>y</code>、説明変数<code>x</code>などです。</p>
+  <p><strong>未知パラメータ</strong><br />
+    データから推定したい量です。平均、分散、回帰係数、階層モデルの群間ばらつき、潜在変数などが含まれます。Stanでは主に<code>parameters</code>ブロックに書きます。</p>
+  <p><strong>確率構造</strong><br />
+    データとパラメータの関係を確率分布で書いたものです。たとえば、<code>y ~ normal(mu, sigma)</code>は「観測値<code>y</code>は平均<code>mu</code>、標準偏差<code>sigma</code>の正規分布に従う」という仮定を表します。ただしStanの<code>~</code>記法は、乱数を発生させる命令ではなく、モデルの対数密度に項を追加するための記法です。
+  </p>
+  <h3 id="112統計モデルは「真実」ではなく「仮定の明示」">1.1.2　統計モデルは「真実」ではなく「仮定の明示」</h3>
+  <p>
+    統計モデルは現実そのものではなく、現実を分析可能な形に簡略化した<strong>仮定の集合</strong>です。モデルは、現実の全要素を完全に再現するものではありません。むしろ、分析目的に照らして重要な構造を取り出し、不確実性を含めて表現するための道具です。
+  </p>
+  <p>たとえば、正規分布モデル</p>
+  <p>$$
+    y \sim \mathrm{Normal}(\mu, \sigma)
+    $$</p>
+  <p>は、「データのばらつきは正規分布で近似できる」という仮定を置いています。この仮定が妥当かどうかは、推定後に残差、事後予測、モデル比較、外部データでの予測性能などを通じて検討します。</p>
+  <p>Stan User's
+    Guideには、回帰モデル、時系列モデル、欠測データ、打ち切り・切断データ、混合モデル、測定誤差、ガウス過程、ODE、サバイバルモデルなど、多様なモデル例が含まれています。これは、統計モデリングが単なる「回帰分析」だけではなく、データ生成過程を明示的に記述する広い枠組みであることを示しています。
+  </p>
+  <h3 id="113ベイズ統計における統計モデル">1.1.3　ベイズ統計における統計モデル</h3>
+  <p>Stanはベイズ推論に強いツールです。ベイズ統計では、未知パラメータを固定された未知量として扱いつつ、その不確実性を確率分布で表します。基本形は次のようになります。</p>
+  <p>$$
+    p(\theta \mid y) \propto p(y \mid \theta)p(\theta)
+    $$</p>
+  <p>ここで、$\theta$は未知パラメータ、$y$は観測データです。</p>
+  <p><strong>尤度 $p(y \mid \theta)$</strong> は、パラメータが与えられたときに観測データがどれくらい起こりやすいかを表します。</p>
+  <p><strong>事前分布 $p(\theta)$</strong> は、データを見る前にパラメータについて持っている知識や制約を表します。</p>
+  <p><strong>事後分布 $p(\theta \mid y)$</strong> は、データを観測した後のパラメータの不確実性を表します。</p>
+  <p>Stan言語は、データで条件づけられた対数密度関数を定義します。ベイズモデルでは、この対数密度は典型的には事後分布に比例する非正規化対数密度です。</p>
+  <h3 id="114最小例：正規分布モデル">1.1.4　最小例：正規分布モデル</h3>
+  <p>観測値<code>y</code>が正規分布に従うと仮定し、平均<code>mu</code>と標準偏差<code>sigma</code>を推定するモデルは、Stanでは次のように書けます。</p>
+  <pre class="stan-code"><code class="language-stan">data {
   int&lt;lower=1&gt; N;
   vector[N] y;
 }
@@ -165,36 +265,51 @@ model {
   y ~ normal(mu, sigma);
 }
 </code></pre>
-<p>このモデルでは、<code>data</code>ブロックがRから渡される観測データ、<code>parameters</code>ブロックが推定対象、<code>model</code>ブロックが事前分布と尤度を定義しています。</p>
-<h2 id="12統計モデリングの目的">1.2　統計モデリングの目的</h2>
-<h3 id="121目的1：未知量を推定する">1.2.1　目的1：未知量を推定する</h3>
-<p>統計モデリングの第一の目的は、観測データから未知の量を推定することです。たとえば、商品の平均購入金額、広告効果、薬剤効果、地域ごとのリスク、顧客の離脱確率、機械の故障率などです。</p>
-<p>頻度論的な推定では点推定値や信頼区間を使うことが多いですが、ベイズモデリングでは未知量の<strong>事後分布</strong>を直接扱います。これにより、「平均効果はどの程度か」だけでなく、「その効果が正である確率はどれくらいか」「実務上意味のある大きさを超える確率はどれくらいか」といった問いを表現しやすくなります。</p>
-<h3 id="122目的2：不確実性を定量化する">1.2.2　目的2：不確実性を定量化する</h3>
-<p>統計モデリングでは、推定値そのものよりも、推定の不確実性が重要になることがあります。たとえば、2つの施策AとBの平均効果が近い場合、単に平均値だけを比較しても意思決定には不十分です。どの程度の確信を持ってAがBより良いと言えるのか、効果のばらつきはどれくらいか、最悪の場合にどの程度悪化しうるかを評価する必要があります。</p>
-<p>StanのMCMC出力では、各パラメータについて多数の事後ドローが得られます。RStanの<code>stanfit</code>オブジェクトは、Stanモデルのフィット結果を保持し、<code>print</code>、<code>plot</code>、<code>summary</code>などのメソッドで要約や診断情報を取り出せます。</p>
-<h3 id="123目的3：予測する">1.2.3　目的3：予測する</h3>
-<p>統計モデルは、まだ観測されていないデータの予測にも使います。ベイズモデルでは、パラメータの事後分布を通じて、予測値の不確実性も同時に扱えます。</p>
-<p>Stan User's Guideでは、事後予測分布を「過去の観測データが与えられたときの新しい観測値の分布」として説明し、<code>generated quantities</code>ブロックを使って事後予測量を生成する方法を示しています。</p>
-<pre><code class="language-stan">generated quantities {
+  <p>このモデルでは、<code>data</code>ブロックがRから渡される観測データ、<code>parameters</code>ブロックが推定対象、<code>model</code>ブロックが事前分布と尤度を定義しています。
+  </p>
+  <h2 id="12統計モデリングの目的">1.2　統計モデリングの目的</h2>
+  <h3 id="121目的1：未知量を推定する">1.2.1　目的1：未知量を推定する</h3>
+  <p>統計モデリングの第一の目的は、観測データから未知の量を推定することです。たとえば、商品の平均購入金額、広告効果、薬剤効果、地域ごとのリスク、顧客の離脱確率、機械の故障率などです。</p>
+  <p>
+    頻度論的な推定では点推定値や信頼区間を使うことが多いですが、ベイズモデリングでは未知量の<strong>事後分布</strong>を直接扱います。これにより、「平均効果はどの程度か」だけでなく、「その効果が正である確率はどれくらいか」「実務上意味のある大きさを超える確率はどれくらいか」といった問いを表現しやすくなります。
+  </p>
+  <h3 id="122目的2：不確実性を定量化する">1.2.2　目的2：不確実性を定量化する</h3>
+  <p>
+    統計モデリングでは、推定値そのものよりも、推定の不確実性が重要になることがあります。たとえば、2つの施策AとBの平均効果が近い場合、単に平均値だけを比較しても意思決定には不十分です。どの程度の確信を持ってAがBより良いと言えるのか、効果のばらつきはどれくらいか、最悪の場合にどの程度悪化しうるかを評価する必要があります。
+  </p>
+  <p>
+    StanのMCMC出力では、各パラメータについて多数の事後ドローが得られます。RStanの<code>stanfit</code>オブジェクトは、Stanモデルのフィット結果を保持し、<code>print</code>、<code>plot</code>、<code>summary</code>などのメソッドで要約や診断情報を取り出せます。
+  </p>
+  <h3 id="123目的3：予測する">1.2.3　目的3：予測する</h3>
+  <p>統計モデルは、まだ観測されていないデータの予測にも使います。ベイズモデルでは、パラメータの事後分布を通じて、予測値の不確実性も同時に扱えます。</p>
+  <p>Stan User's
+    Guideでは、事後予測分布を「過去の観測データが与えられたときの新しい観測値の分布」として説明し、<code>generated quantities</code>ブロックを使って事後予測量を生成する方法を示しています。</p>
+  <pre class="stan-code"><code class="language-stan">generated quantities {
   real y_new;
   y_new = normal_rng(mu, sigma);
 }
 </code></pre>
-<p>この<code>y_new</code>の分布を見ることで、「次に観測される値はどの範囲に入りそうか」を評価できます。</p>
-<h3 id="124目的4：モデルの妥当性を確認する">1.2.4　目的4：モデルの妥当性を確認する</h3>
-<p>統計モデルは作って終わりではありません。モデルがデータの重要な特徴を再現できているかを確認する必要があります。Stan User's Guideでは、事後予測チェックを、フィット済みモデルのパラメータから複製データをシミュレーションし、その複製データと元データの統計量を比較する方法として説明しています。</p>
-<p>たとえば、モデルが平均はよく再現しているが外れ値の頻度を過小評価している場合、そのモデルは平均値の推定には使えても、リスク評価や異常検知には不適切かもしれません。統計モデリングでは、モデルの仮定、推定結果、予測性能、診断結果を総合的に見る必要があります。</p>
-<h3 id="125目的5：意思決定を支援する">1.2.5　目的5：意思決定を支援する</h3>
-<p>統計モデリングの最終目的は、多くの場合、意思決定です。意思決定には、単なる推定値ではなく、不確実性、リスク、コスト、便益、制約条件が関係します。たとえば、広告予算配分、医療介入、在庫管理、価格設定、品質管理などでは、「期待値が最大の選択肢」だけでなく、「失敗時の損失が許容範囲か」も考える必要があります。</p>
-<p>Stan User's Guideには、事後予測サンプリング、シミュレーションベースのキャリブレーション、事後・事前予測チェック、ホールドアウト評価、クロスバリデーション、意思決定分析などが含まれています。</p>
-<h2 id="13確率的プログラミング言語">1.3　確率的プログラミング言語</h2>
-<h3 id="131確率的プログラミング言語とは">1.3.1　確率的プログラミング言語とは</h3>
-<p><strong>確率的プログラミング言語</strong>とは、確率モデルをプログラムとして記述し、そのモデルに対して推論アルゴリズムを適用するための言語です。通常のプログラムが「入力から出力を計算する手続き」を書くのに対して、確率的プログラムでは「データがどのような確率構造から発生したか」を書きます。</p>
-<p>Stanの場合、ユーザーはモデルをStan言語で書きます。Stan言語は、確率モデルをコード化するためのプログラミング言語であり、データに条件づけられた対数密度関数を定義します。</p>
-<h3 id="132モデル記述と推論を分離する">1.3.2　モデル記述と推論を分離する</h3>
-<p>確率的プログラミングの大きな利点は、<strong>モデル記述</strong>と<strong>推論アルゴリズム</strong>をある程度分離できることです。ユーザーは、まずモデルを次のように書きます。</p>
-<pre><code class="language-stan">data {
+  <p>この<code>y_new</code>の分布を見ることで、「次に観測される値はどの範囲に入りそうか」を評価できます。</p>
+  <h3 id="124目的4：モデルの妥当性を確認する">1.2.4　目的4：モデルの妥当性を確認する</h3>
+  <p>統計モデルは作って終わりではありません。モデルがデータの重要な特徴を再現できているかを確認する必要があります。Stan User's
+    Guideでは、事後予測チェックを、フィット済みモデルのパラメータから複製データをシミュレーションし、その複製データと元データの統計量を比較する方法として説明しています。</p>
+  <p>
+    たとえば、モデルが平均はよく再現しているが外れ値の頻度を過小評価している場合、そのモデルは平均値の推定には使えても、リスク評価や異常検知には不適切かもしれません。統計モデリングでは、モデルの仮定、推定結果、予測性能、診断結果を総合的に見る必要があります。
+  </p>
+  <h3 id="125目的5：意思決定を支援する">1.2.5　目的5：意思決定を支援する</h3>
+  <p>
+    統計モデリングの最終目的は、多くの場合、意思決定です。意思決定には、単なる推定値ではなく、不確実性、リスク、コスト、便益、制約条件が関係します。たとえば、広告予算配分、医療介入、在庫管理、価格設定、品質管理などでは、「期待値が最大の選択肢」だけでなく、「失敗時の損失が許容範囲か」も考える必要があります。
+  </p>
+  <p>Stan User's Guideには、事後予測サンプリング、シミュレーションベースのキャリブレーション、事後・事前予測チェック、ホールドアウト評価、クロスバリデーション、意思決定分析などが含まれています。</p>
+  <h2 id="13確率的プログラミング言語">1.3　確率的プログラミング言語</h2>
+  <h3 id="131確率的プログラミング言語とは">1.3.1　確率的プログラミング言語とは</h3>
+  <p>
+    <strong>確率的プログラミング言語</strong>とは、確率モデルをプログラムとして記述し、そのモデルに対して推論アルゴリズムを適用するための言語です。通常のプログラムが「入力から出力を計算する手続き」を書くのに対して、確率的プログラムでは「データがどのような確率構造から発生したか」を書きます。
+  </p>
+  <p>Stanの場合、ユーザーはモデルをStan言語で書きます。Stan言語は、確率モデルをコード化するためのプログラミング言語であり、データに条件づけられた対数密度関数を定義します。</p>
+  <h3 id="132モデル記述と推論を分離する">1.3.2　モデル記述と推論を分離する</h3>
+  <p>確率的プログラミングの大きな利点は、<strong>モデル記述</strong>と<strong>推論アルゴリズム</strong>をある程度分離できることです。ユーザーは、まずモデルを次のように書きます。</p>
+  <pre class="stan-code"><code class="language-stan">data {
   int&lt;lower=1&gt; N;
   vector[N] y;
 }
@@ -210,10 +325,11 @@ model {
   y ~ normal(mu, sigma);
 }
 </code></pre>
-<p>その後、Stanがこのモデルから対数密度と勾配を計算し、NUTS/HMCなどの推論アルゴリズムを用いてパラメータの事後分布を探索します。Stan Reference Manualでは、Stanで使われるMCMCアルゴリズムとしてHamiltonian Monte Carlo、HMC、およびその適応版であるNo-U-Turn Sampler、NUTSが説明されています。</p>
-<h3 id="133stanプログラムの基本ブロック">1.3.3　Stanプログラムの基本ブロック</h3>
-<p>Stanプログラムは、役割ごとにブロックを分けて書きます。主要ブロックは次の通りです。</p>
-<pre><code class="language-stan">functions {
+  <p>その後、Stanがこのモデルから対数密度と勾配を計算し、NUTS/HMCなどの推論アルゴリズムを用いてパラメータの事後分布を探索します。Stan Reference
+    Manualでは、Stanで使われるMCMCアルゴリズムとしてHamiltonian Monte Carlo、HMC、およびその適応版であるNo-U-Turn Sampler、NUTSが説明されています。</p>
+  <h3 id="133stanプログラムの基本ブロック">1.3.3　Stanプログラムの基本ブロック</h3>
+  <p>Stanプログラムは、役割ごとにブロックを分けて書きます。主要ブロックは次の通りです。</p>
+  <pre class="stan-code"><code class="language-stan">functions {
   // ユーザー定義関数
 }
 
@@ -241,53 +357,69 @@ generated quantities {
   // 事後予測、派生量、乱数生成
 }
 </code></pre>
-<p>Stan公式リファレンスでは、<code>data</code>ブロックはモデルに必要なデータ、<code>parameters</code>ブロックはモデルのパラメータ、<code>model</code>ブロックは対数確率関数、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や乱数生成を扱う場所として説明されています。</p>
-<h3 id="134stanは「サンプリング文」を実行しているわけではない">1.3.4　Stanは「サンプリング文」を実行しているわけではない</h3>
-<p>Stanでは、次のような記法を使います。</p>
-<pre><code class="language-stan">y ~ normal(mu, sigma);
+  <p>
+    Stan公式リファレンスでは、<code>data</code>ブロックはモデルに必要なデータ、<code>parameters</code>ブロックはモデルのパラメータ、<code>model</code>ブロックは対数確率関数、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や乱数生成を扱う場所として説明されています。
+  </p>
+  <h3 id="134stanは「サンプリング文」を実行しているわけではない">1.3.4　Stanは「サンプリング文」を実行しているわけではない</h3>
+  <p>Stanでは、次のような記法を使います。</p>
+  <pre class="stan-code"><code class="language-stan">y ~ normal(mu, sigma);
 </code></pre>
-<p>一見すると「<code>y</code>を正規分布からサンプリングする」ように見えますが、<code>model</code>ブロック内ではそうではありません。この記法は、モデルの対数密度に正規分布の対数確率を加えるための簡略記法です。</p>
-<pre><code class="language-stan">target += normal_lpdf(y | mu, sigma);
+  <p>
+    一見すると「<code>y</code>を正規分布からサンプリングする」ように見えますが、<code>model</code>ブロック内ではそうではありません。この記法は、モデルの対数密度に正規分布の対数確率を加えるための簡略記法です。
+  </p>
+  <pre class="stan-code"><code class="language-stan">target += normal_lpdf(y | mu, sigma);
 </code></pre>
-<p>これはStanを理解する上で非常に重要です。Stanは、モデル中の分布文を使って<strong>非正規化事後密度</strong>を構成し、その密度に比例する分布からMCMCでサンプルを生成します。</p>
-<h3 id="135stanで直接扱いにくいもの">1.3.5　Stanで直接扱いにくいもの</h3>
-<p>Stanは連続パラメータの推論に強く設計されています。一方で、Stanは離散パラメータを直接サンプリングしません。Stan User's Guideでは、Stanは離散パラメータのサンプリングをサポートせず、離散潜在変数を含む多くのモデルでは周辺化によってStanで書ける形にする、と説明されています。</p>
-<p>たとえば、変化点モデル、潜在クラスモデル、HMM、混合モデルなどでは、離散状態をそのまま<code>parameters</code>ブロックに置くのではなく、可能な場合は<code>log_sum_exp</code>などを使って離散状態を周辺化します。この点は、BUGS/JAGS系のモデル表現とStanの大きな違いです。</p>
-<h2 id="14なぜstanなのか">1.4　なぜStanなのか？</h2>
-<h3 id="141理由1：柔軟なベイズモデリングができる">1.4.1　理由1：柔軟なベイズモデリングができる</h3>
-<p>Stanは、単純な線形回帰から、階層モデル、時系列モデル、欠測データモデル、測定誤差モデル、混合モデル、ガウス過程、ODE、サバイバルモデルまで、幅広い統計モデルを書けます。</p>
-<p>これは、既製の関数にモデルを合わせるのではなく、分析対象に合わせてモデルを設計できるという意味です。たとえば、次のような状況ではStanの柔軟性が重要になります。</p>
-<ul>
-<li>観測誤差と過程誤差を分けたい。</li>
-<li>個人差、店舗差、地域差を階層構造で表現したい。</li>
-<li>欠測値を単に削除せず、モデル内で扱いたい。</li>
-<li>標準的な回帰では表現しにくい独自の尤度を使いたい。</li>
-<li>事後予測や意思決定に必要な派生量をモデル内で生成したい。</li>
-</ul>
-<h3 id="142理由2：nutshmcによる効率的なサンプリング">1.4.2　理由2：NUTS/HMCによる効率的なサンプリング</h3>
-<p>Stanの中心的なMCMC手法はHMCとNUTSです。HMCは、サンプリング対象の密度関数の微分情報を使って、事後分布内を効率よく移動するMCMC手法です。</p>
-<p>NUTSは、HMCの調整を自動化する適応的なバリアントです。RStan公式ページでも、RStanはNUTS、つまりHMCの一種であるNo-U-Turn Samplerによるフルベイズ推論を提供すると説明されています。</p>
-<p>実務的には、StanのNUTS/HMCは、パラメータ間に強い相関があるモデルや高次元の連続パラメータを含むモデルで有用です。ただし、すべてのモデルが自動的にうまくいくわけではありません。モデルの識別性が弱い、事前分布が不適切、パラメータ化が悪い、事後分布の幾何が複雑な場合には、divergent transitions、R-hat悪化、ESS低下などの診断問題が出ます。</p>
-<h3 id="143理由3：診断が重視されている">1.4.3　理由3：診断が重視されている</h3>
-<p>Stanを使う利点の一つは、MCMCの結果に対する診断情報が重視されていることです。RStanやStanでは、推定値の平均や信用区間だけでなく、R-hat、ESS、divergence、treedepthなどを見る必要があります。</p>
-<p>Stan公式の診断ガイドでは、R-hatはチェーン間・チェーン内の推定量を比較する収束診断であり、最終的には少なくとも4チェーンを走らせ、一般にはR-hatが1.01未満の場合にサンプルを十分信頼するという目安が示されています。また、bulk-ESSとtail-ESSは分布の中心部と裾の推定効率を評価するための指標です。</p>
-<h3 id="144理由4：モデルを明示的に書ける">1.4.4　理由4：モデルを明示的に書ける</h3>
-<p>Stanでは、モデルの仮定をコードとして明示します。これは、便利な一方で、責任も伴います。<code>brms</code>や<code>rstanarm</code>のような高水準インターフェースでは、Rの数式構文に近い形でモデルを指定できますが、Stanを直接書く場合は、尤度、事前分布、パラメータ制約、生成量を自分で設計します。</p>
-<p>Stanを直接使うと、次のような利点があります。</p>
-<ul>
-<li>モデルの仮定がコード上で明確になる。</li>
-<li>標準パッケージにない尤度や構造を書ける。</li>
-<li>事前分布を明示的に設計できる。</li>
-<li>事後予測や派生量を<code>generated quantities</code>で管理できる。</li>
-<li>モデルの問題点を診断しやすくなる。</li>
-</ul>
-<h3 id="145理由5：rpythonjuliashellなど複数環境から使える">1.4.5　理由5：R、Python、Julia、Shellなど複数環境から使える</h3>
-<p>Stanは単独のRパッケージではなく、複数言語から利用できる統計モデリング基盤です。Rから使う場合には、RStanとCmdStanRが主な選択肢になります。Stan Toolkitでは、CmdStanRはRユーザー向けの推奨インターフェース、RStanはRインターフェースの一つとして掲載されています。</p>
-<h2 id="15なぜrstanなのか">1.5　なぜRStanなのか？</h2>
-<h3 id="151rstanはstanをrから使うためのインターフェース">1.5.1　RStanはStanをRから使うためのインターフェース</h3>
-<p><strong>RStan</strong>は、StanをRから使うためのインターフェースです。パッケージ名は小文字で<code>rstan</code>です。RStan公式ページでは、RStanはStan C++パッケージへのRインターフェースであり、NUTS/HMC、ADVI、L-BFGS最適化を提供すると説明されています。</p>
-<p>RStanを使うと、Stanモデルを<code>.stan</code>ファイルとして書き、Rからデータを渡し、推定を実行し、結果をRオブジェクトとして扱えます。</p>
-<pre><code class="language-r">library(rstan)
+  <p>これはStanを理解する上で非常に重要です。Stanは、モデル中の分布文を使って<strong>非正規化事後密度</strong>を構成し、その密度に比例する分布からMCMCでサンプルを生成します。</p>
+  <h3 id="135stanで直接扱いにくいもの">1.3.5　Stanで直接扱いにくいもの</h3>
+  <p>Stanは連続パラメータの推論に強く設計されています。一方で、Stanは離散パラメータを直接サンプリングしません。Stan User's
+    Guideでは、Stanは離散パラメータのサンプリングをサポートせず、離散潜在変数を含む多くのモデルでは周辺化によってStanで書ける形にする、と説明されています。</p>
+  <p>
+    たとえば、変化点モデル、潜在クラスモデル、HMM、混合モデルなどでは、離散状態をそのまま<code>parameters</code>ブロックに置くのではなく、可能な場合は<code>log_sum_exp</code>などを使って離散状態を周辺化します。この点は、BUGS/JAGS系のモデル表現とStanの大きな違いです。
+  </p>
+  <h2 id="14なぜstanなのか">1.4　なぜStanなのか？</h2>
+  <h3 id="141理由1：柔軟なベイズモデリングができる">1.4.1　理由1：柔軟なベイズモデリングができる</h3>
+  <p>Stanは、単純な線形回帰から、階層モデル、時系列モデル、欠測データモデル、測定誤差モデル、混合モデル、ガウス過程、ODE、サバイバルモデルまで、幅広い統計モデルを書けます。</p>
+  <p>これは、既製の関数にモデルを合わせるのではなく、分析対象に合わせてモデルを設計できるという意味です。たとえば、次のような状況ではStanの柔軟性が重要になります。</p>
+  <ul>
+    <li>観測誤差と過程誤差を分けたい。</li>
+    <li>個人差、店舗差、地域差を階層構造で表現したい。</li>
+    <li>欠測値を単に削除せず、モデル内で扱いたい。</li>
+    <li>標準的な回帰では表現しにくい独自の尤度を使いたい。</li>
+    <li>事後予測や意思決定に必要な派生量をモデル内で生成したい。</li>
+  </ul>
+  <h3 id="142理由2：nutshmcによる効率的なサンプリング">1.4.2　理由2：NUTS/HMCによる効率的なサンプリング</h3>
+  <p>Stanの中心的なMCMC手法はHMCとNUTSです。HMCは、サンプリング対象の密度関数の微分情報を使って、事後分布内を効率よく移動するMCMC手法です。</p>
+  <p>NUTSは、HMCの調整を自動化する適応的なバリアントです。RStan公式ページでも、RStanはNUTS、つまりHMCの一種であるNo-U-Turn Samplerによるフルベイズ推論を提供すると説明されています。</p>
+  <p>
+    実務的には、StanのNUTS/HMCは、パラメータ間に強い相関があるモデルや高次元の連続パラメータを含むモデルで有用です。ただし、すべてのモデルが自動的にうまくいくわけではありません。モデルの識別性が弱い、事前分布が不適切、パラメータ化が悪い、事後分布の幾何が複雑な場合には、divergent
+    transitions、R-hat悪化、ESS低下などの診断問題が出ます。</p>
+  <h3 id="143理由3：診断が重視されている">1.4.3　理由3：診断が重視されている</h3>
+  <p>Stanを使う利点の一つは、MCMCの結果に対する診断情報が重視されていることです。RStanやStanでは、推定値の平均や信用区間だけでなく、R-hat、ESS、divergence、treedepthなどを見る必要があります。
+  </p>
+  <p>
+    Stan公式の診断ガイドでは、R-hatはチェーン間・チェーン内の推定量を比較する収束診断であり、最終的には少なくとも4チェーンを走らせ、一般にはR-hatが1.01未満の場合にサンプルを十分信頼するという目安が示されています。また、bulk-ESSとtail-ESSは分布の中心部と裾の推定効率を評価するための指標です。
+  </p>
+  <h3 id="144理由4：モデルを明示的に書ける">1.4.4　理由4：モデルを明示的に書ける</h3>
+  <p>
+    Stanでは、モデルの仮定をコードとして明示します。これは、便利な一方で、責任も伴います。<code>brms</code>や<code>rstanarm</code>のような高水準インターフェースでは、Rの数式構文に近い形でモデルを指定できますが、Stanを直接書く場合は、尤度、事前分布、パラメータ制約、生成量を自分で設計します。
+  </p>
+  <p>Stanを直接使うと、次のような利点があります。</p>
+  <ul>
+    <li>モデルの仮定がコード上で明確になる。</li>
+    <li>標準パッケージにない尤度や構造を書ける。</li>
+    <li>事前分布を明示的に設計できる。</li>
+    <li>事後予測や派生量を<code>generated quantities</code>で管理できる。</li>
+    <li>モデルの問題点を診断しやすくなる。</li>
+  </ul>
+  <h3 id="145理由5：rpythonjuliashellなど複数環境から使える">1.4.5　理由5：R、Python、Julia、Shellなど複数環境から使える</h3>
+  <p>Stanは単独のRパッケージではなく、複数言語から利用できる統計モデリング基盤です。Rから使う場合には、RStanとCmdStanRが主な選択肢になります。Stan
+    Toolkitでは、CmdStanRはRユーザー向けの推奨インターフェース、RStanはRインターフェースの一つとして掲載されています。</p>
+  <h2 id="15なぜrstanなのか">1.5　なぜRStanなのか？</h2>
+  <h3 id="151rstanはstanをrから使うためのインターフェース">1.5.1　RStanはStanをRから使うためのインターフェース</h3>
+  <p><strong>RStan</strong>は、StanをRから使うためのインターフェースです。パッケージ名は小文字で<code>rstan</code>です。RStan公式ページでは、RStanはStan
+    C++パッケージへのRインターフェースであり、NUTS/HMC、ADVI、L-BFGS最適化を提供すると説明されています。</p>
+  <p>RStanを使うと、Stanモデルを<code>.stan</code>ファイルとして書き、Rからデータを渡し、推定を実行し、結果をRオブジェクトとして扱えます。</p>
+  <pre class="stan-code"><code class="language-r">library(rstan)
 
 stan_data &lt;- list(
   N = length(y),
@@ -305,110 +437,139 @@ fit &lt;- stan(
 
 print(fit)
 </code></pre>
-<p>RStanの<code>stan()</code>関数は、Stanモデルをフィットし、その結果を<code>stanfit</code>オブジェクトとして返します。公式リファレンスでは、<code>stan()</code>はStanモデルをC++コードに変換し、共有オブジェクトとしてコンパイルし、サンプルを生成して<code>stanfit</code>オブジェクトにまとめる、と説明されています。</p>
-<h3 id="152rの分析環境と統合しやすい">1.5.2　Rの分析環境と統合しやすい</h3>
-<p>RStanの強みは、Rの分析環境と統合しやすいことです。Rでは、データ前処理、可視化、統計解析、レポート作成、パッケージ化までのワークフローが成熟しています。RStanを使うと、Stanで推定した事後ドローをRのオブジェクトとして扱い、<code>summary()</code>、<code>plot()</code>、<code>as.data.frame()</code>、<code>as.matrix()</code>などで加工できます。</p>
-<p>また、Stan開発チーム関連のRパッケージとして、<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>posterior</code>、<code>rstanarm</code>などがあります。<code>bayesplot</code>は推定値・診断・事後予測チェックの可視化、<code>loo</code>は予測性能評価やモデル比較、<code>rstanarm</code>は応用回帰モデリング向けのR数式インターフェースです。</p>
-<h3 id="153rstanの実行プロセス">1.5.3　RStanの実行プロセス</h3>
-<p>RStanで<code>stan()</code>を実行すると、内部的には次の処理が行われます。</p>
-<ol>
-<li>Stanコードを読み込む。</li>
-<li>StanコードをC++コードへ変換する。</li>
-<li>C++コードをコンパイルし、Rセッション内に読み込む。</li>
-<li>Rのリストなどで渡したデータをStanに渡す。</li>
-<li>NUTS/HMCなどでサンプリングする。</li>
-<li>結果を<code>stanfit</code>オブジェクトとして返す。</li>
-</ol>
-<p><code>stan()</code>のデフォルトは<code>chains = 4</code>、<code>iter = 2000</code>、<code>warmup = floor(iter/2)</code>です。<code>iter</code>はウォームアップを含む各チェーンの反復数、<code>warmup</code>はステップサイズ適応が行われる期間でもあり、ウォームアップサンプルは推論に使いません。既定かつ推奨アルゴリズムはNUTSです。</p>
-<h3 id="154rstanの基本設定">1.5.4　RStanの基本設定</h3>
-<p>RStanでは、よく次の設定を使います。</p>
-<pre><code class="language-r">library(rstan)
+  <p>
+    RStanの<code>stan()</code>関数は、Stanモデルをフィットし、その結果を<code>stanfit</code>オブジェクトとして返します。公式リファレンスでは、<code>stan()</code>はStanモデルをC++コードに変換し、共有オブジェクトとしてコンパイルし、サンプルを生成して<code>stanfit</code>オブジェクトにまとめる、と説明されています。
+  </p>
+  <h3 id="152rの分析環境と統合しやすい">1.5.2　Rの分析環境と統合しやすい</h3>
+  <p>
+    RStanの強みは、Rの分析環境と統合しやすいことです。Rでは、データ前処理、可視化、統計解析、レポート作成、パッケージ化までのワークフローが成熟しています。RStanを使うと、Stanで推定した事後ドローをRのオブジェクトとして扱い、<code>summary()</code>、<code>plot()</code>、<code>as.data.frame()</code>、<code>as.matrix()</code>などで加工できます。
+  </p>
+  <p>
+    また、Stan開発チーム関連のRパッケージとして、<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>posterior</code>、<code>rstanarm</code>などがあります。<code>bayesplot</code>は推定値・診断・事後予測チェックの可視化、<code>loo</code>は予測性能評価やモデル比較、<code>rstanarm</code>は応用回帰モデリング向けのR数式インターフェースです。
+  </p>
+  <h3 id="153rstanの実行プロセス">1.5.3　RStanの実行プロセス</h3>
+  <p>RStanで<code>stan()</code>を実行すると、内部的には次の処理が行われます。</p>
+  <ol>
+    <li>Stanコードを読み込む。</li>
+    <li>StanコードをC++コードへ変換する。</li>
+    <li>C++コードをコンパイルし、Rセッション内に読み込む。</li>
+    <li>Rのリストなどで渡したデータをStanに渡す。</li>
+    <li>NUTS/HMCなどでサンプリングする。</li>
+    <li>結果を<code>stanfit</code>オブジェクトとして返す。</li>
+  </ol>
+  <p>
+    <code>stan()</code>のデフォルトは<code>chains = 4</code>、<code>iter = 2000</code>、<code>warmup = floor(iter/2)</code>です。<code>iter</code>はウォームアップを含む各チェーンの反復数、<code>warmup</code>はステップサイズ適応が行われる期間でもあり、ウォームアップサンプルは推論に使いません。既定かつ推奨アルゴリズムはNUTSです。
+  </p>
+  <h3 id="154rstanの基本設定">1.5.4　RStanの基本設定</h3>
+  <p>RStanでは、よく次の設定を使います。</p>
+  <pre class="stan-code"><code class="language-r">library(rstan)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 </code></pre>
-<p><code>options(mc.cores = ...)</code>は、複数チェーンを並列実行するためのR側の設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みの<code>stanmodel</code>を保存するかどうかを制御するオプションです。同じStanコードを繰り返し使う場合、再コンパイルの負担を減らせます。</p>
-<h3 id="155rstanを使うべき場面">1.5.5　RStanを使うべき場面</h3>
-<p>RStanは、次のような場合に適しています。</p>
-<p><strong>R中心の分析ワークフローを維持したい場合</strong><br />
-データ処理、可視化、レポート、既存コードがRに集約されているなら、RStanは自然に組み込めます。</p>
-<p><strong>Stanコードを直接書いて柔軟なモデルを構築したい場合</strong><br />
-<code>brms</code>や<code>rstanarm</code>では表現しにくい独自の尤度、制約、潜在構造、事後予測量を扱う場合、RStanでStanコードを直接書く価値があります。</p>
-<p><strong>既存のRStan資産がある場合</strong><br />
-過去に作成された<code>.stan</code>ファイル、<code>stanfit</code>オブジェクトを前提にした解析コード、RStan依存の社内パッケージや研究コードがある場合、RStanを継続利用する合理性があります。</p>
-<p><strong>CRANバイナリや従来のR構文に依存したい場合</strong><br />
-CmdStanR公式ドキュメントでは、RStanの利点として、CRANバイナリがMacとWindows向けに利用できること、R6クラスを避けられるため多くのRユーザーにとって構文がなじみやすいこと、事前コンパイル済みStanプログラムを含むRパッケージを配布しやすいことが挙げられています。</p>
-<h3 id="156rstanとcmdstanrの関係">1.5.6　RStanとCmdStanRの関係</h3>
-<p>現在のStanエコシステムでは、RStanとCmdStanRの両方があります。CmdStanRはCmdStanを背後で使う軽量なRインターフェースで、Stan ToolkitではRユーザー向けの推奨インターフェースとして掲載されています。</p>
-<p>一方、RStanはRセッション内からStanのC++コードを呼び出すインメモリ型のインターフェースです。CmdStanR公式ドキュメントでは、RStanはRcppやinlineを使ってRからC++コードを呼び出すのに対し、CmdStanRはRからC++を直接呼び出さず、CmdStanを通じてコンパイル・実行・出力ファイルへの書き込みを行うと説明されています。</p>
-<p>実務上は、新規プロジェクトではCmdStanRも検討対象になります。ただし、RStanは現在でもStanのRインターフェースとして公式に維持されており、R中心の既存資産がある場合には十分に有用です。</p>
-<h2 id="chapter1補足と文献案内">Chapter 1　補足と文献案内</h2>
-<h3 id="まず読むべき公式ドキュメント">まず読むべき公式ドキュメント</h3>
-<p>最初に確認すべきなのは、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンスのトップページ</a>です。ここで、RStanがStan C++パッケージへのRインターフェースであること、NUTS/HMC、ADVI、L-BFGSを提供すること、関連Rパッケージとして<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>rstanarm</code>などがあることを確認できます。</p>
-<p>次に読むべきなのは、<a href="https://mc-stan.org/rstan/reference/stan.html">RStanの<code>stan()</code>関数リファレンス</a>です。ここには、<code>file</code>、<code>model_code</code>、<code>data</code>、<code>chains</code>、<code>iter</code>、<code>warmup</code>、<code>cores</code>、<code>thin</code>などの主要引数、StanコードからC++への変換、コンパイル、サンプリング、<code>stanfit</code>生成までの流れがまとまっています。</p>
-<p>Stan言語そのものを学ぶ場合は、<a href="https://mc-stan.org/docs/reference-manual/">Stan Reference Manual</a>を参照します。モデル例と実践的な書き方を学ぶ場合は、<a href="https://mc-stan.org/docs/stan-users-guide/">Stan User's Guide</a>を使います。</p>
-<h3 id="学習順序のおすすめ">学習順序のおすすめ</h3>
-<ol>
-<li>正規分布モデル、ベルヌーイモデル、ポアソンモデルを書く。</li>
-<li>RStanで<code>stan()</code>を実行し、<code>print(fit)</code>で平均、標準偏差、信用区間、R-hat、ESSを見る。</li>
-<li><code>generated quantities</code>で事後予測を作る。</li>
-<li>事後予測チェックを行う。</li>
-<li>回帰モデル、階層モデルへ進む。</li>
-<li>divergence、R-hat、ESS、treedepthなどの診断を学ぶ。</li>
-<li>必要に応じて再パラメータ化、事前分布設計、効率化を学ぶ。</li>
-</ol>
-<p>併読に向く文献としては、Gelman et al. の <em>Bayesian Data Analysis</em>、McElreath の <em>Statistical Rethinking: A Bayesian Course with Examples in R and Stan</em> が代表的です。</p>
-<hr />
-<h1 id="chapter2stanとrstanをはじめよう">Chapter 2　StanとRStanをはじめよう</h1>
-<h2 id="この章の到達目標-2">この章の到達目標</h2>
-<p>この章では、RStanを実際に動かすための環境準備と、Stanコードを読むための最小限の文法を整理します。Stanは、モデルをStan言語で書き、RStanがStanコードをC++に変換・コンパイルし、Rからサンプリングを実行する、という流れで使います。</p>
-<h2 id="21stanとrstanの準備">2.1　StanとRStanの準備</h2>
-<h3 id="211必要なもの">2.1.1　必要なもの</h3>
-<p>RStanを使うには、少なくとも次のものが必要です。</p>
-<ul>
-<li>R</li>
-<li>RStudioまたは任意のR実行環境</li>
-<li><code>rstan</code>パッケージ</li>
-<li>C++コンパイル環境</li>
-<li>Stanコードを書くためのテキストエディタ</li>
-</ul>
-<p>Stanモデルをコンパイルして実行するにはC++17コンパイラとビルド用ユーティリティが必要です。WindowsではRtools、macOSではXcode Command Line Tools、Linuxでは<code>build-essential</code>系のツールが関係します。</p>
-<h3 id="212rstanのインストール">2.1.2　RStanのインストール</h3>
-<p>通常はR上で次を実行します。</p>
-<pre><code class="language-r">install.packages(
+  <p>
+    <code>options(mc.cores = ...)</code>は、複数チェーンを並列実行するためのR側の設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みの<code>stanmodel</code>を保存するかどうかを制御するオプションです。同じStanコードを繰り返し使う場合、再コンパイルの負担を減らせます。
+  </p>
+  <h3 id="155rstanを使うべき場面">1.5.5　RStanを使うべき場面</h3>
+  <p>RStanは、次のような場合に適しています。</p>
+  <p><strong>R中心の分析ワークフローを維持したい場合</strong><br />
+    データ処理、可視化、レポート、既存コードがRに集約されているなら、RStanは自然に組み込めます。</p>
+  <p><strong>Stanコードを直接書いて柔軟なモデルを構築したい場合</strong><br />
+    <code>brms</code>や<code>rstanarm</code>では表現しにくい独自の尤度、制約、潜在構造、事後予測量を扱う場合、RStanでStanコードを直接書く価値があります。
+  </p>
+  <p><strong>既存のRStan資産がある場合</strong><br />
+    過去に作成された<code>.stan</code>ファイル、<code>stanfit</code>オブジェクトを前提にした解析コード、RStan依存の社内パッケージや研究コードがある場合、RStanを継続利用する合理性があります。
+  </p>
+  <p><strong>CRANバイナリや従来のR構文に依存したい場合</strong><br />
+    CmdStanR公式ドキュメントでは、RStanの利点として、CRANバイナリがMacとWindows向けに利用できること、R6クラスを避けられるため多くのRユーザーにとって構文がなじみやすいこと、事前コンパイル済みStanプログラムを含むRパッケージを配布しやすいことが挙げられています。
+  </p>
+  <h3 id="156rstanとcmdstanrの関係">1.5.6　RStanとCmdStanRの関係</h3>
+  <p>現在のStanエコシステムでは、RStanとCmdStanRの両方があります。CmdStanRはCmdStanを背後で使う軽量なRインターフェースで、Stan
+    ToolkitではRユーザー向けの推奨インターフェースとして掲載されています。</p>
+  <p>
+    一方、RStanはRセッション内からStanのC++コードを呼び出すインメモリ型のインターフェースです。CmdStanR公式ドキュメントでは、RStanはRcppやinlineを使ってRからC++コードを呼び出すのに対し、CmdStanRはRからC++を直接呼び出さず、CmdStanを通じてコンパイル・実行・出力ファイルへの書き込みを行うと説明されています。
+  </p>
+  <p>実務上は、新規プロジェクトではCmdStanRも検討対象になります。ただし、RStanは現在でもStanのRインターフェースとして公式に維持されており、R中心の既存資産がある場合には十分に有用です。</p>
+  <h2 id="chapter1補足と文献案内">Chapter 1　補足と文献案内</h2>
+  <h3 id="まず読むべき公式ドキュメント">まず読むべき公式ドキュメント</h3>
+  <p>最初に確認すべきなのは、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンスのトップページ</a>です。ここで、RStanがStan
+    C++パッケージへのRインターフェースであること、NUTS/HMC、ADVI、L-BFGSを提供すること、関連Rパッケージとして<code>bayesplot</code>、<code>shinystan</code>、<code>loo</code>、<code>rstanarm</code>などがあることを確認できます。
+  </p>
+  <p>次に読むべきなのは、<a
+      href="https://mc-stan.org/rstan/reference/stan.html">RStanの<code>stan()</code>関数リファレンス</a>です。ここには、<code>file</code>、<code>model_code</code>、<code>data</code>、<code>chains</code>、<code>iter</code>、<code>warmup</code>、<code>cores</code>、<code>thin</code>などの主要引数、StanコードからC++への変換、コンパイル、サンプリング、<code>stanfit</code>生成までの流れがまとまっています。
+  </p>
+  <p>Stan言語そのものを学ぶ場合は、<a href="https://mc-stan.org/docs/reference-manual/">Stan Reference
+      Manual</a>を参照します。モデル例と実践的な書き方を学ぶ場合は、<a href="https://mc-stan.org/docs/stan-users-guide/">Stan User's
+      Guide</a>を使います。</p>
+  <h3 id="学習順序のおすすめ">学習順序のおすすめ</h3>
+  <ol>
+    <li>正規分布モデル、ベルヌーイモデル、ポアソンモデルを書く。</li>
+    <li>RStanで<code>stan()</code>を実行し、<code>print(fit)</code>で平均、標準偏差、信用区間、R-hat、ESSを見る。</li>
+    <li><code>generated quantities</code>で事後予測を作る。</li>
+    <li>事後予測チェックを行う。</li>
+    <li>回帰モデル、階層モデルへ進む。</li>
+    <li>divergence、R-hat、ESS、treedepthなどの診断を学ぶ。</li>
+    <li>必要に応じて再パラメータ化、事前分布設計、効率化を学ぶ。</li>
+  </ol>
+  <p>併読に向く文献としては、Gelman et al. の <em>Bayesian Data Analysis</em>、McElreath の <em>Statistical Rethinking: A Bayesian
+      Course with Examples in R and Stan</em> が代表的です。</p>
+  <hr />
+  <h1 id="chapter2stanとrstanをはじめよう">Chapter 2　StanとRStanをはじめよう</h1>
+  <h2 id="この章の到達目標-2">この章の到達目標</h2>
+  <p>
+    この章では、RStanを実際に動かすための環境準備と、Stanコードを読むための最小限の文法を整理します。Stanは、モデルをStan言語で書き、RStanがStanコードをC++に変換・コンパイルし、Rからサンプリングを実行する、という流れで使います。
+  </p>
+  <h2 id="21stanとrstanの準備">2.1　StanとRStanの準備</h2>
+  <h3 id="211必要なもの">2.1.1　必要なもの</h3>
+  <p>RStanを使うには、少なくとも次のものが必要です。</p>
+  <ul>
+    <li>R</li>
+    <li>RStudioまたは任意のR実行環境</li>
+    <li><code>rstan</code>パッケージ</li>
+    <li>C++コンパイル環境</li>
+    <li>Stanコードを書くためのテキストエディタ</li>
+  </ul>
+  <p>Stanモデルをコンパイルして実行するにはC++17コンパイラとビルド用ユーティリティが必要です。WindowsではRtools、macOSではXcode Command Line
+    Tools、Linuxでは<code>build-essential</code>系のツールが関係します。</p>
+  <h3 id="212rstanのインストール">2.1.2　RStanのインストール</h3>
+  <p>通常はR上で次を実行します。</p>
+  <pre><code class="language-r">install.packages(
   &quot;rstan&quot;,
   repos = &quot;https://cloud.r-project.org/&quot;,
   dependencies = TRUE
 )
 </code></pre>
-<p>Linuxでnodejs関連のライブラリがない場合に限り、RStan Getting Startedでは次の環境変数を設定する例が示されています。</p>
-<pre><code class="language-r">Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1)
+  <p>Linuxでnodejs関連のライブラリがない場合に限り、RStan Getting Startedでは次の環境変数を設定する例が示されています。</p>
+  <pre><code class="language-r">Sys.setenv(DOWNLOAD_STATIC_LIBV8 = 1)
 install.packages(
   &quot;rstan&quot;,
   repos = &quot;https://cloud.r-project.org/&quot;,
   dependencies = TRUE
 )
 </code></pre>
-<p>推定結果の可視化と事後予測チェックまで行うなら、次も入れておきます。</p>
-<pre><code class="language-r">install.packages(c(&quot;bayesplot&quot;, &quot;posterior&quot;), dependencies = TRUE)
+  <p>推定結果の可視化と事後予測チェックまで行うなら、次も入れておきます。</p>
+  <pre><code class="language-r">install.packages(c(&quot;bayesplot&quot;, &quot;posterior&quot;), dependencies = TRUE)
 </code></pre>
-<p><code>bayesplot</code>はパラメータ推定値、診断、事後予測チェックの可視化に使えます。</p>
-<h3 id="213読み込みと基本設定">2.1.3　読み込みと基本設定</h3>
-<p>RStanを使うRスクリプトの冒頭には、通常、次を書きます。</p>
-<pre><code class="language-r">library(rstan)
+  <p><code>bayesplot</code>はパラメータ推定値、診断、事後予測チェックの可視化に使えます。</p>
+  <h3 id="213読み込みと基本設定">2.1.3　読み込みと基本設定</h3>
+  <p>RStanを使うRスクリプトの冒頭には、通常、次を書きます。</p>
+  <pre><code class="language-r">library(rstan)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 </code></pre>
-<p><code>options(mc.cores = parallel::detectCores())</code>は、複数チェーンを並列実行するための設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みStanプログラムを保存し、同じStanコードを再実行するときの再コンパイルを減らすための設定です。</p>
-<h3 id="214インストール確認">2.1.4　インストール確認</h3>
-<p>RStanのインストール確認には、公式Getting Startedで次のテストコードが示されています。</p>
-<pre><code class="language-r">example(stan_model, package = &quot;rstan&quot;, run.dontrun = TRUE)
+  <p>
+    <code>options(mc.cores = parallel::detectCores())</code>は、複数チェーンを並列実行するための設定です。<code>rstan_options(auto_write = TRUE)</code>は、コンパイル済みStanプログラムを保存し、同じStanコードを再実行するときの再コンパイルを減らすための設定です。
+  </p>
+  <h3 id="214インストール確認">2.1.4　インストール確認</h3>
+  <p>RStanのインストール確認には、公式Getting Startedで次のテストコードが示されています。</p>
+  <pre><code class="language-r">example(stan_model, package = &quot;rstan&quot;, run.dontrun = TRUE)
 </code></pre>
-<p>このコードでStanモデルがコンパイルされ、サンプリングが始まれば、RStan、C++コンパイラ、Rとの連携は概ね動作しています。</p>
-<h3 id="215最小のrstan実行例">2.1.5　最小のRStan実行例</h3>
-<p>以下は、StanコードをR文字列として渡す最小例です。実務では<code>.stan</code>ファイルに分けるほうが管理しやすいですが、初学段階では<code>model_code</code>を使うと動作確認が簡単です。</p>
-<pre><code class="language-r">library(rstan)
+  <p>このコードでStanモデルがコンパイルされ、サンプリングが始まれば、RStan、C++コンパイラ、Rとの連携は概ね動作しています。</p>
+  <h3 id="215最小のrstan実行例">2.1.5　最小のRStan実行例</h3>
+  <p>以下は、StanコードをR文字列として渡す最小例です。実務では<code>.stan</code>ファイルに分けるほうが管理しやすいですが、初学段階では<code>model_code</code>を使うと動作確認が簡単です。
+  </p>
+  <pre><code class="language-r">library(rstan)
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -456,10 +617,10 @@ fit_minimal &lt;- stan(
 
 print(fit_minimal, pars = c(&quot;mu&quot;, &quot;sigma&quot;, &quot;y_new&quot;))
 </code></pre>
-<h2 id="22stanの基本的な文法">2.2　Stanの基本的な文法</h2>
-<h3 id="221stanプログラムの基本ブロック">2.2.1　Stanプログラムの基本ブロック</h3>
-<p>Stanコードは、役割ごとにブロックを分けて書きます。</p>
-<pre><code class="language-stan">functions {
+  <h2 id="22stanの基本的な文法">2.2　Stanの基本的な文法</h2>
+  <h3 id="221stanプログラムの基本ブロック">2.2.1　Stanプログラムの基本ブロック</h3>
+  <p>Stanコードは、役割ごとにブロックを分けて書きます。</p>
+  <pre class="stan-code"><code class="language-stan">functions {
   // ユーザー定義関数
 }
 
@@ -487,34 +648,36 @@ generated quantities {
   // 事後予測、派生量、log_lik、乱数生成
 }
 </code></pre>
-<p><code>model</code>ブロックは対数確率関数を定義する場所、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や疑似乱数生成を行う場所です。乱数生成関数は、基本的に<code>transformed data</code>、<code>generated quantities</code>、または<code>_rng</code>で終わるユーザー定義関数の中で使います。</p>
-<h3 id="222dataブロック">2.2.2　<code>data</code>ブロック</h3>
-<p><code>data</code>ブロックには、Rから渡す値を宣言します。</p>
-<pre><code class="language-stan">data {
+  <p>
+    <code>model</code>ブロックは対数確率関数を定義する場所、<code>generated quantities</code>ブロックはパラメータやデータに基づく派生量や疑似乱数生成を行う場所です。乱数生成関数は、基本的に<code>transformed data</code>、<code>generated quantities</code>、または<code>_rng</code>で終わるユーザー定義関数の中で使います。
+  </p>
+  <h3 id="222dataブロック">2.2.2　<code>data</code>ブロック</h3>
+  <p><code>data</code>ブロックには、Rから渡す値を宣言します。</p>
+  <pre class="stan-code"><code class="language-stan">data {
   int&lt;lower=1&gt; N;
   vector[N] y;
 }
 </code></pre>
-<p>これは、R側で次のようなリストを渡すことを意味します。</p>
-<pre><code class="language-r">stan_data &lt;- list(
+  <p>これは、R側で次のようなリストを渡すことを意味します。</p>
+  <pre><code class="language-r">stan_data &lt;- list(
   N = length(y),
   y = y
 )
 </code></pre>
-<p><code>data</code>ブロックの変数は外部入力、たとえばRのデータ構造から読み込まれます。制約に反する値を渡すと、読み込み時点でエラーになります。</p>
-<h3 id="223parametersブロック">2.2.3　<code>parameters</code>ブロック</h3>
-<p><code>parameters</code>ブロックには、推定対象を宣言します。</p>
-<pre><code class="language-stan">parameters {
+  <p><code>data</code>ブロックの変数は外部入力、たとえばRのデータ構造から読み込まれます。制約に反する値を渡すと、読み込み時点でエラーになります。</p>
+  <h3 id="223parametersブロック">2.2.3　<code>parameters</code>ブロック</h3>
+  <p><code>parameters</code>ブロックには、推定対象を宣言します。</p>
+  <pre class="stan-code"><code class="language-stan">parameters {
   real alpha;
   real beta;
   real&lt;lower=0&gt; sigma;
 }
 </code></pre>
-<p><code>real&lt;lower=0&gt; sigma;</code>は、<code>sigma</code>が0以上の実数であることを示します。標準偏差、分散、率、濃度など、負にならない量には制約を付けます。</p>
-<p>Stanでは、<code>parameters</code>ブロックに宣言した量がHMC/NUTSでサンプリングされます。</p>
-<h3 id="224modelブロック">2.2.4　<code>model</code>ブロック</h3>
-<p><code>model</code>ブロックには、事前分布と尤度を書きます。</p>
-<pre><code class="language-stan">model {
+  <p><code>real&lt;lower=0&gt; sigma;</code>は、<code>sigma</code>が0以上の実数であることを示します。標準偏差、分散、率、濃度など、負にならない量には制約を付けます。</p>
+  <p>Stanでは、<code>parameters</code>ブロックに宣言した量がHMC/NUTSでサンプリングされます。</p>
+  <h3 id="224modelブロック">2.2.4　<code>model</code>ブロック</h3>
+  <p><code>model</code>ブロックには、事前分布と尤度を書きます。</p>
+  <pre class="stan-code"><code class="language-stan">model {
   alpha ~ normal(0, 5);
   beta ~ normal(0, 2);
   sigma ~ exponential(1);
@@ -522,11 +685,15 @@ generated quantities {
   y ~ normal(alpha + beta * x, sigma);
 }
 </code></pre>
-<p><code>alpha ~ normal(0, 5)</code>は切片の事前分布、<code>beta ~ normal(0, 2)</code>は傾きの事前分布、<code>y ~ normal(...)</code>は観測データの尤度です。</p>
-<p>Stanの<code>~</code>記法は、厳密には「サンプリングする」という命令ではありません。<code>y ~ normal(mu, sigma)</code>のような分布文は、<code>target += normal_lpdf(y | mu, sigma)</code>のように対数密度へ加算するための記法上の便利表現です。</p>
-<h3 id="225generatedquantitiesブロック">2.2.5　<code>generated quantities</code>ブロック</h3>
-<p><code>generated quantities</code>ブロックは、事後予測、派生量、オッズ比、相対リスク、log likelihoodなどを計算する場所です。</p>
-<pre><code class="language-stan">generated quantities {
+  <p>
+    <code>alpha ~ normal(0, 5)</code>は切片の事前分布、<code>beta ~ normal(0, 2)</code>は傾きの事前分布、<code>y ~ normal(...)</code>は観測データの尤度です。
+  </p>
+  <p>
+    Stanの<code>~</code>記法は、厳密には「サンプリングする」という命令ではありません。<code>y ~ normal(mu, sigma)</code>のような分布文は、<code>target += normal_lpdf(y | mu, sigma)</code>のように対数密度へ加算するための記法上の便利表現です。
+  </p>
+  <h3 id="225generatedquantitiesブロック">2.2.5　<code>generated quantities</code>ブロック</h3>
+  <p><code>generated quantities</code>ブロックは、事後予測、派生量、オッズ比、相対リスク、log likelihoodなどを計算する場所です。</p>
+  <pre class="stan-code"><code class="language-stan">generated quantities {
   array[N] real y_rep;
 
   for (n in 1:N) {
@@ -534,10 +701,11 @@ generated quantities {
   }
 }
 </code></pre>
-<p>ここで<code>y_rep</code>は、推定されたパラメータに基づいて生成される複製データです。事後予測チェック用の複製データは<code>generated quantities</code>ブロックで生成できます。</p>
-<h3 id="226型の基本">2.2.6　型の基本</h3>
-<p>Stanで頻出する型は次です。</p>
-<pre><code class="language-stan">int n;                     // 整数
+  <p>ここで<code>y_rep</code>は、推定されたパラメータに基づいて生成される複製データです。事後予測チェック用の複製データは<code>generated quantities</code>ブロックで生成できます。
+  </p>
+  <h3 id="226型の基本">2.2.6　型の基本</h3>
+  <p>Stanで頻出する型は次です。</p>
+  <pre class="stan-code"><code class="language-stan">int n;                     // 整数
 real x;                    // 実数
 vector[N] y;               // 長さNの列ベクトル
 row_vector[K] z;           // 長さKの行ベクトル
@@ -545,78 +713,88 @@ matrix[N, K] X;            // N行K列の行列
 array[N] int y_bin;        // 長さNの整数配列
 array[N] real y_rep;       // 長さNの実数配列
 </code></pre>
-<p>Stanの添字はRと同じく1始まりです。</p>
-<pre><code class="language-stan">for (n in 1:N) {
+  <p>Stanの添字はRと同じく1始まりです。</p>
+  <pre class="stan-code"><code class="language-stan">for (n in 1:N) {
   y[n] ~ normal(mu[n], sigma);
 }
 </code></pre>
-<h3 id="227ベクトル化">2.2.7　ベクトル化</h3>
-<p>Stanでは、ループで書ける処理をベクトル化して書けることがあります。</p>
-<pre><code class="language-stan">y ~ normal(alpha + beta * x, sigma);
+  <h3 id="227ベクトル化">2.2.7　ベクトル化</h3>
+  <p>Stanでは、ループで書ける処理をベクトル化して書けることがあります。</p>
+  <pre class="stan-code"><code class="language-stan">y ~ normal(alpha + beta * x, sigma);
 </code></pre>
-<p>これは概念的には次と同じです。</p>
-<pre><code class="language-stan">for (n in 1:N) {
+  <p>これは概念的には次と同じです。</p>
+  <pre class="stan-code"><code class="language-stan">for (n in 1:N) {
   y[n] ~ normal(alpha + beta * x[n], sigma);
 }
 </code></pre>
-<p>Stan User's Guideでは、単回帰モデルの<code>y ~ normal(alpha + beta * x, sigma)</code>はベクトル化された形であり、同等のループ版より簡潔で高速だと説明されています。</p>
-<h3 id="228rstanへ渡すデータ">2.2.8　RStanへ渡すデータ</h3>
-<p>RStanでは、Stanの<code>data</code>ブロックで宣言した名前と同じ名前を持つRのリストを渡します。</p>
-<pre><code class="language-r">stan_data &lt;- list(
+  <p>Stan User's Guideでは、単回帰モデルの<code>y ~ normal(alpha + beta * x, sigma)</code>はベクトル化された形であり、同等のループ版より簡潔で高速だと説明されています。
+  </p>
+  <h3 id="228rstanへ渡すデータ">2.2.8　RStanへ渡すデータ</h3>
+  <p>RStanでは、Stanの<code>data</code>ブロックで宣言した名前と同じ名前を持つRのリストを渡します。</p>
+  <pre><code class="language-r">stan_data &lt;- list(
   N = nrow(df),
   K = 3,
   X = X,
   y = df$y
 )
 </code></pre>
-<p>注意点として、RStan公式リファレンスでは、Rの長さ1ベクトルはStan側ではスカラーとして扱われるため、<code>array[1] real y;</code>のようなStanデータには、R側で<code>array(1.0, dim = 1)</code>のように配列として渡す必要があると説明されています。</p>
-<h2 id="23補足と文献案内">2.3　補足と文献案内</h2>
-<p>この章で最初に読むべき公式資料は、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンス</a>、<a href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">RStan Getting Started</a>、<a href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan Reference ManualのProgram Blocks</a>、<a href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan User's GuideのRegression Models</a>です。</p>
-<p>RStanで実行する関数の仕様はRStan公式リファレンス、Stanコードの仕様はStan Reference Manual、モデル例はStan User's Guideで確認する、という使い分けが実務的です。</p>
-<hr />
-<h1 id="chapter3基本的な回帰とモデルのチェック">Chapter 3　基本的な回帰とモデルのチェック</h1>
-<h2 id="この章の前提">この章の前提</h2>
-<p>この章では、感染症疫学でよく出るデータ形式を使って、RStanで基本的な回帰モデルを実装します。使うデータは<strong>再現可能なサンプルデータ</strong>です。実患者データや公開監視データそのものではありませんが、列構造とモデルの考え方は、感染症分野で実際に使われる分析に近づけています。</p>
-<table>
-<thead>
-<tr>
-  <th>節</th>
-  <th>モデル</th>
-  <th>感染症分野での例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>3.1</td>
-  <td>単回帰</td>
-  <td>下水中ウイルスRNA濃度と地域感染者率</td>
-</tr>
-<tr>
-  <td>3.2</td>
-  <td>重回帰</td>
-  <td>入院率と症例数、ワクチン接種率、移動量</td>
-</tr>
-<tr>
-  <td>3.3</td>
-  <td>二項ロジスティック回帰</td>
-  <td>検査陽性数 / 検査数、検査陽性率</td>
-</tr>
-<tr>
-  <td>3.4</td>
-  <td>ロジスティック回帰</td>
-  <td>個人単位の感染有無、ワクチン接種、曝露</td>
-</tr>
-<tr>
-  <td>3.5</td>
-  <td>ポアソン回帰</td>
-  <td>地域別・週別症例数、人口オフセット</td>
-</tr>
-</tbody>
-</table>
-<p>CDCは感染症を下水で監視するプログラムを運用しており、下水監視は感染拡大に早く対応するためのデータ源として位置づけられています。CDCはCOVID-19、インフルエンザ、RSVなどについて週次の検査陽性割合も監視指標として示しています。また、COVID-19ワクチン有効性評価では、多変量ロジスティック回帰でオッズ比を推定する解析が使われています。感染症の症例数解析では、人口をオフセットに入れたポアソン回帰で率を扱う例もあります。</p>
-<h2 id="共通準備">共通準備</h2>
-<p>以下をRスクリプトの最初に実行します。</p>
-<pre><code class="language-r">library(rstan)
+  <p>
+    注意点として、RStan公式リファレンスでは、Rの長さ1ベクトルはStan側ではスカラーとして扱われるため、<code>array[1] real y;</code>のようなStanデータには、R側で<code>array(1.0, dim = 1)</code>のように配列として渡す必要があると説明されています。
+  </p>
+  <h2 id="23補足と文献案内">2.3　補足と文献案内</h2>
+  <p>この章で最初に読むべき公式資料は、<a href="https://mc-stan.org/rstan/reference/rstan.html">RStan公式リファレンス</a>、<a
+      href="https://github.com/stan-dev/rstan/wiki/RStan-Getting-Started">RStan Getting Started</a>、<a
+      href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan Reference ManualのProgram Blocks</a>、<a
+      href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan User's GuideのRegression Models</a>です。</p>
+  <p>RStanで実行する関数の仕様はRStan公式リファレンス、Stanコードの仕様はStan Reference Manual、モデル例はStan User's Guideで確認する、という使い分けが実務的です。</p>
+  <hr />
+  <h1 id="chapter3基本的な回帰とモデルのチェック">Chapter 3　基本的な回帰とモデルのチェック</h1>
+  <h2 id="この章の前提">この章の前提</h2>
+  <p>
+    この章では、感染症疫学でよく出るデータ形式を使って、RStanで基本的な回帰モデルを実装します。使うデータは<strong>再現可能なサンプルデータ</strong>です。実患者データや公開監視データそのものではありませんが、列構造とモデルの考え方は、感染症分野で実際に使われる分析に近づけています。
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>節</th>
+        <th>モデル</th>
+        <th>感染症分野での例</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>3.1</td>
+        <td>単回帰</td>
+        <td>下水中ウイルスRNA濃度と地域感染者率</td>
+      </tr>
+      <tr>
+        <td>3.2</td>
+        <td>重回帰</td>
+        <td>入院率と症例数、ワクチン接種率、移動量</td>
+      </tr>
+      <tr>
+        <td>3.3</td>
+        <td>二項ロジスティック回帰</td>
+        <td>検査陽性数 / 検査数、検査陽性率</td>
+      </tr>
+      <tr>
+        <td>3.4</td>
+        <td>ロジスティック回帰</td>
+        <td>個人単位の感染有無、ワクチン接種、曝露</td>
+      </tr>
+      <tr>
+        <td>3.5</td>
+        <td>ポアソン回帰</td>
+        <td>地域別・週別症例数、人口オフセット</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    CDCは感染症を下水で監視するプログラムを運用しており、下水監視は感染拡大に早く対応するためのデータ源として位置づけられています。CDCはCOVID-19、インフルエンザ、RSVなどについて週次の検査陽性割合も監視指標として示しています。また、COVID-19ワクチン有効性評価では、多変量ロジスティック回帰でオッズ比を推定する解析が使われています。感染症の症例数解析では、人口をオフセットに入れたポアソン回帰で率を扱う例もあります。
+  </p>
+  <h2 id="共通準備">共通準備</h2>
+  <p>以下をRスクリプトの最初に実行します。</p>
+  <pre><code class="language-r">library(rstan)
 library(bayesplot)
 
 options(mc.cores = parallel::detectCores())
@@ -624,8 +802,8 @@ rstan_options(auto_write = TRUE)
 
 set.seed(2026)
 </code></pre>
-<p>共通のサンプリング設定も作っておきます。</p>
-<pre><code class="language-r">stan_sampling_args &lt;- list(
+  <p>共通のサンプリング設定も作っておきます。</p>
+  <pre><code class="language-r">stan_sampling_args &lt;- list(
   chains = 4,
   iter = 2000,
   warmup = 1000,
@@ -634,31 +812,36 @@ set.seed(2026)
   control = list(adapt_delta = 0.95)
 )
 </code></pre>
-<p><code>adapt_delta = 0.95</code>は、divergenceを減らすために使われることがあります。ただし、Stanの診断ガイドでは、<code>adapt_delta</code>や<code>max_treedepth</code>を上げることは最後の手段に近く、まずはモデル、事前分布、パラメータ化、数値安定性を確認することが推奨されています。</p>
-<p>共通の診断関数も用意します。</p>
-<pre><code class="language-r">check_fit &lt;- function(fit, pars) {
+  <p>
+    <code>adapt_delta = 0.95</code>は、divergenceを減らすために使われることがあります。ただし、Stanの診断ガイドでは、<code>adapt_delta</code>や<code>max_treedepth</code>を上げることは最後の手段に近く、まずはモデル、事前分布、パラメータ化、数値安定性を確認することが推奨されています。
+  </p>
+  <p>共通の診断関数も用意します。</p>
+  <pre><code class="language-r">check_fit &lt;- function(fit, pars) {
   print(fit, pars = pars, probs = c(0.025, 0.5, 0.975))
   rstan::check_hmc_diagnostics(fit)
 }
 </code></pre>
-<p>RStanの<code>check_hmc_diagnostics()</code>は、divergence、treedepth、E-BFMIなどのHMC診断をまとめて表示する関数です。Stanの診断では、R-hat、ESS、divergent transitions、maximum treedepth、BFMIを見る必要があります。</p>
-<h2 id="31単回帰">3.1　単回帰</h2>
-<h3 id="311問題設定">3.1.1　問題設定</h3>
-<p>例として、週別の下水中ウイルスRNA濃度と、同じ地域の週別COVID-19症例率の関係を考えます。下水中ウイルス濃度は地域内感染の早期指標として使われることがあり、ここでは簡略化して、標準化した下水指標から対数症例率を説明します。</p>
-<p>モデルは次です。</p>
-<p>$$
-y_n \sim \mathrm{Normal}(\alpha + \beta x_n, \sigma)
-$$</p>
-<p>ここで、</p>
-<ul>
-<li>$y_n$：週$n$の対数症例率</li>
-<li>$x_n$：週$n$の標準化済み下水ウイルス指標</li>
-<li>$\alpha$：切片</li>
-<li>$\beta$：下水指標1標準偏差あたりの対数症例率の変化</li>
-<li>$\sigma$：観測誤差</li>
-</ul>
-<h3 id="312サンプルデータ作成">3.1.2　サンプルデータ作成</h3>
-<pre><code class="language-r">set.seed(101)
+  <p>
+    RStanの<code>check_hmc_diagnostics()</code>は、divergence、treedepth、E-BFMIなどのHMC診断をまとめて表示する関数です。Stanの診断では、R-hat、ESS、divergent
+    transitions、maximum treedepth、BFMIを見る必要があります。</p>
+  <h2 id="31単回帰">3.1　単回帰</h2>
+  <h3 id="311問題設定">3.1.1　問題設定</h3>
+  <p>例として、週別の下水中ウイルスRNA濃度と、同じ地域の週別COVID-19症例率の関係を考えます。下水中ウイルス濃度は地域内感染の早期指標として使われることがあり、ここでは簡略化して、標準化した下水指標から対数症例率を説明します。
+  </p>
+  <p>モデルは次です。</p>
+  <p>$$
+    y_n \sim \mathrm{Normal}(\alpha + \beta x_n, \sigma)
+    $$</p>
+  <p>ここで、</p>
+  <ul>
+    <li>$y_n$：週$n$の対数症例率</li>
+    <li>$x_n$：週$n$の標準化済み下水ウイルス指標</li>
+    <li>$\alpha$：切片</li>
+    <li>$\beta$：下水指標1標準偏差あたりの対数症例率の変化</li>
+    <li>$\sigma$：観測誤差</li>
+  </ul>
+  <h3 id="312サンプルデータ作成">3.1.2　サンプルデータ作成</h3>
+  <pre><code class="language-r">set.seed(101)
 
 N &lt;- 40
 week &lt;- 1:N
@@ -698,8 +881,8 @@ d1 &lt;- data.frame(
 
 head(d1)
 </code></pre>
-<h3 id="313stanコード">3.1.3　Stanコード</h3>
-<pre><code class="language-r">stan_code_simple_lm &lt;- &quot;
+  <h3 id="313stanコード">3.1.3　Stanコード</h3>
+  <pre class="stan-code"><code class="language-r">stan_code_simple_lm &lt;- &quot;
 data {
   int&lt;lower=1&gt; N;
   vector[N] x;
@@ -731,8 +914,8 @@ generated quantities {
 }
 &quot;
 </code></pre>
-<h3 id="314rstanで推定">3.1.4　RStanで推定</h3>
-<pre><code class="language-r">stan_data1 &lt;- list(
+  <h3 id="314rstanで推定">3.1.4　RStanで推定</h3>
+  <pre><code class="language-r">stan_data1 &lt;- list(
   N = nrow(d1),
   x = d1$log_wastewater_z,
   y = d1$log_cases_per_100k
@@ -748,8 +931,8 @@ fit1 &lt;- do.call(
 
 check_fit(fit1, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;sigma&quot;))
 </code></pre>
-<h3 id="315モデルチェック">3.1.5　モデルチェック</h3>
-<pre><code class="language-r"># 事後予測ドロー
+  <h3 id="315モデルチェック">3.1.5　モデルチェック</h3>
+  <pre><code class="language-r"># 事後予測ドロー
 post1 &lt;- rstan::extract(fit1)
 y_rep1 &lt;- post1$y_rep
 
@@ -770,25 +953,25 @@ plot(
 )
 abline(0, 1)
 </code></pre>
-<p>事後予測チェックでは、観測データと、モデルから生成した複製データ<code>y_rep</code>が似た特徴を持つかを確認します。</p>
-<h3 id="316解釈">3.1.6　解釈</h3>
-<p><code>beta</code>の事後中央値が正で、95%信用区間の大部分が0より大きければ、「下水指標が高い週ほど対数症例率も高い」という関係を支持します。</p>
-<p>ただし、この単回帰は因果効果を示すものではありません。検査体制、報告遅れ、季節性、免疫状態、変異株、行動変化などを調整していないため、あくまで監視指標間の関連を見るモデルです。</p>
-<h2 id="32重回帰">3.2　重回帰</h2>
-<h3 id="321問題設定">3.2.1　問題設定</h3>
-<p>次に、週別の呼吸器感染症入院率を、複数の説明変数で説明するモデルを考えます。感染症疫学では、単一の説明変数だけでなく、症例数、ワクチン接種率、移動量、変異株流行期、季節性などを同時に調整したい場面が多くあります。</p>
-<p>モデルは次です。</p>
-<p>$$
-y_n \sim \mathrm{Normal}(\alpha + X_n \beta, \sigma)
-$$</p>
-<p>ここで、</p>
-<ul>
-<li>$y_n$：週別の対数入院率</li>
-<li>$X_n$：説明変数ベクトル</li>
-<li>$\beta$：各説明変数の係数</li>
-</ul>
-<h3 id="322サンプルデータ作成">3.2.2　サンプルデータ作成</h3>
-<pre><code class="language-r">set.seed(102)
+  <p>事後予測チェックでは、観測データと、モデルから生成した複製データ<code>y_rep</code>が似た特徴を持つかを確認します。</p>
+  <h3 id="316解釈">3.1.6　解釈</h3>
+  <p><code>beta</code>の事後中央値が正で、95%信用区間の大部分が0より大きければ、「下水指標が高い週ほど対数症例率も高い」という関係を支持します。</p>
+  <p>ただし、この単回帰は因果効果を示すものではありません。検査体制、報告遅れ、季節性、免疫状態、変異株、行動変化などを調整していないため、あくまで監視指標間の関連を見るモデルです。</p>
+  <h2 id="32重回帰">3.2　重回帰</h2>
+  <h3 id="321問題設定">3.2.1　問題設定</h3>
+  <p>次に、週別の呼吸器感染症入院率を、複数の説明変数で説明するモデルを考えます。感染症疫学では、単一の説明変数だけでなく、症例数、ワクチン接種率、移動量、変異株流行期、季節性などを同時に調整したい場面が多くあります。</p>
+  <p>モデルは次です。</p>
+  <p>$$
+    y_n \sim \mathrm{Normal}(\alpha + X_n \beta, \sigma)
+    $$</p>
+  <p>ここで、</p>
+  <ul>
+    <li>$y_n$：週別の対数入院率</li>
+    <li>$X_n$：説明変数ベクトル</li>
+    <li>$\beta$：各説明変数の係数</li>
+  </ul>
+  <h3 id="322サンプルデータ作成">3.2.2　サンプルデータ作成</h3>
+  <pre><code class="language-r">set.seed(102)
 
 N &lt;- 60
 week &lt;- 1:N
@@ -841,8 +1024,8 @@ d2 &lt;- data.frame(
 
 head(d2)
 </code></pre>
-<h3 id="323stanコード">3.2.3　Stanコード</h3>
-<pre><code class="language-r">stan_code_multiple_lm &lt;- &quot;
+  <h3 id="323stanコード">3.2.3　Stanコード</h3>
+  <pre class="stan-code"><code class="language-r">stan_code_multiple_lm &lt;- &quot;
 data {
   int&lt;lower=1&gt; N;
   int&lt;lower=1&gt; K;
@@ -876,8 +1059,8 @@ generated quantities {
 }
 &quot;
 </code></pre>
-<h3 id="324rstanで推定">3.2.4　RStanで推定</h3>
-<pre><code class="language-r">stan_data2 &lt;- list(
+  <h3 id="324rstanで推定">3.2.4　RStanで推定</h3>
+  <pre><code class="language-r">stan_data2 &lt;- list(
   N = nrow(d2),
   K = ncol(X2),
   X = X2,
@@ -897,13 +1080,13 @@ check_fit(
   pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;sigma&quot;)
 )
 </code></pre>
-<h3 id="325係数名を付けて要約する">3.2.5　係数名を付けて要約する</h3>
-<pre><code class="language-r">summary2 &lt;- summary(fit2, pars = &quot;beta&quot;)$summary
+  <h3 id="325係数名を付けて要約する">3.2.5　係数名を付けて要約する</h3>
+  <pre><code class="language-r">summary2 &lt;- summary(fit2, pars = &quot;beta&quot;)$summary
 rownames(summary2) &lt;- colnames(X2)
 summary2[, c(&quot;mean&quot;, &quot;sd&quot;, &quot;2.5%&quot;, &quot;50%&quot;, &quot;97.5%&quot;, &quot;Rhat&quot;, &quot;n_eff&quot;)]
 </code></pre>
-<h3 id="326モデルチェック">3.2.6　モデルチェック</h3>
-<pre><code class="language-r">post2 &lt;- rstan::extract(fit2)
+  <h3 id="326モデルチェック">3.2.6　モデルチェック</h3>
+  <pre><code class="language-r">post2 &lt;- rstan::extract(fit2)
 y_rep2 &lt;- post2$y_rep
 
 bayesplot::ppc_dens_overlay(
@@ -921,26 +1104,29 @@ plot(
 )
 abline(0, 1)
 </code></pre>
-<h3 id="327解釈">3.2.7　解釈</h3>
-<p><code>beta[log_cases_z]</code>が正なら、症例数が多い週ほど入院率も高い、という関係を示します。<code>beta[vacc_z]</code>が負なら、ワクチン接種率が高い週では、他の変数を調整した上で入院率が低い傾向を示します。</p>
-<p>ただし、このモデルは観察データの回帰です。ワクチン効果そのものを推定するには、交絡、時変交絡、接種選択、年齢構成、既感染、医療アクセス、検査行動などをより丁寧に扱う必要があります。</p>
-<h2 id="33二項ロジスティック回帰">3.3　二項ロジスティック回帰</h2>
-<h3 id="331問題設定">3.3.1　問題設定</h3>
-<p>ここでは、週別の「検査陽性数 / 検査数」を扱います。たとえば、インフルエンザ、COVID-19、RSVの監視では、検査数と陽性数から陽性率を計算します。このような集計データでは、陽性率そのものを正規分布で扱うより、陽性数を二項分布で扱うほうが自然です。</p>
-<p>$$
-y_n \sim \mathrm{Binomial}(N_n, p_n)
-$$</p>
-<p>$$
-\mathrm{logit}(p_n) = \alpha + X_n \beta
-$$</p>
-<p>ここで、</p>
-<ul>
-<li>$y_n$：週$n$の陽性数</li>
-<li>$N_n$：週$n$の検査数</li>
-<li>$p_n$：週$n$の陽性確率</li>
-</ul>
-<h3 id="332サンプルデータ作成">3.3.2　サンプルデータ作成</h3>
-<pre><code class="language-r">set.seed(103)
+  <h3 id="327解釈">3.2.7　解釈</h3>
+  <p>
+    <code>beta[log_cases_z]</code>が正なら、症例数が多い週ほど入院率も高い、という関係を示します。<code>beta[vacc_z]</code>が負なら、ワクチン接種率が高い週では、他の変数を調整した上で入院率が低い傾向を示します。
+  </p>
+  <p>ただし、このモデルは観察データの回帰です。ワクチン効果そのものを推定するには、交絡、時変交絡、接種選択、年齢構成、既感染、医療アクセス、検査行動などをより丁寧に扱う必要があります。</p>
+  <h2 id="33二項ロジスティック回帰">3.3　二項ロジスティック回帰</h2>
+  <h3 id="331問題設定">3.3.1　問題設定</h3>
+  <p>ここでは、週別の「検査陽性数 /
+    検査数」を扱います。たとえば、インフルエンザ、COVID-19、RSVの監視では、検査数と陽性数から陽性率を計算します。このような集計データでは、陽性率そのものを正規分布で扱うより、陽性数を二項分布で扱うほうが自然です。</p>
+  <p>$$
+    y_n \sim \mathrm{Binomial}(N_n, p_n)
+    $$</p>
+  <p>$$
+    \mathrm{logit}(p_n) = \alpha + X_n \beta
+    $$</p>
+  <p>ここで、</p>
+  <ul>
+    <li>$y_n$：週$n$の陽性数</li>
+    <li>$N_n$：週$n$の検査数</li>
+    <li>$p_n$：週$n$の陽性確率</li>
+  </ul>
+  <h3 id="332サンプルデータ作成">3.3.2　サンプルデータ作成</h3>
+  <pre><code class="language-r">set.seed(103)
 
 N &lt;- 52
 week &lt;- 1:N
@@ -991,8 +1177,8 @@ d3 &lt;- data.frame(
 
 head(d3)
 </code></pre>
-<h3 id="333stanコード">3.3.3　Stanコード</h3>
-<pre><code class="language-r">stan_code_binomial_logit &lt;- &quot;
+  <h3 id="333stanコード">3.3.3　Stanコード</h3>
+  <pre class="stan-code"><code class="language-r">stan_code_binomial_logit &lt;- &quot;
 data {
   int&lt;lower=1&gt; N;
   int&lt;lower=1&gt; K;
@@ -1029,8 +1215,8 @@ generated quantities {
 }
 &quot;
 </code></pre>
-<h3 id="334rstanで推定">3.3.4　RStanで推定</h3>
-<pre><code class="language-r">stan_data3 &lt;- list(
+  <h3 id="334rstanで推定">3.3.4　RStanで推定</h3>
+  <pre><code class="language-r">stan_data3 &lt;- list(
   N = nrow(d3),
   K = ncol(X3),
   X = X3,
@@ -1048,8 +1234,8 @@ fit3 &lt;- do.call(
 
 check_fit(fit3, pars = c(&quot;alpha&quot;, &quot;beta&quot;))
 </code></pre>
-<h3 id="335陽性率の予測とモデルチェック">3.3.5　陽性率の予測とモデルチェック</h3>
-<pre><code class="language-r">post3 &lt;- rstan::extract(fit3)
+  <h3 id="335陽性率の予測とモデルチェック">3.3.5　陽性率の予測とモデルチェック</h3>
+  <pre><code class="language-r">post3 &lt;- rstan::extract(fit3)
 
 p_mean3 &lt;- apply(post3$p, 2, mean)
 
@@ -1076,9 +1262,9 @@ bayesplot::ppc_stat(
   stat = &quot;sd&quot;
 )
 </code></pre>
-<h3 id="336解釈">3.3.6　解釈</h3>
-<p>二項ロジスティック回帰では、係数はロジットスケールです。<code>exp(beta[k])</code>を取ると、説明変数が1単位増えたときのオッズ比になります。</p>
-<pre><code class="language-r">beta_draws3 &lt;- post3$beta
+  <h3 id="336解釈">3.3.6　解釈</h3>
+  <p>二項ロジスティック回帰では、係数はロジットスケールです。<code>exp(beta[k])</code>を取ると、説明変数が1単位増えたときのオッズ比になります。</p>
+  <pre><code class="language-r">beta_draws3 &lt;- post3$beta
 or_draws3 &lt;- exp(beta_draws3)
 
 or_summary3 &lt;- apply(
@@ -1091,18 +1277,20 @@ or_summary3 &lt;- apply(
 colnames(or_summary3) &lt;- colnames(X3)
 or_summary3
 </code></pre>
-<p><code>ili_z</code>のオッズ比が1より大きければ、ILI活動が高い週ほど検査陽性確率が高いことを示します。<code>vacc_z</code>のオッズ比が1より小さければ、接種率が高い週ほど陽性率が低い傾向を示します。ただし、これは集計データの関連であり、個人単位のワクチン有効性をそのまま意味しません。</p>
-<h2 id="34ロジスティック回帰">3.4　ロジスティック回帰</h2>
-<h3 id="341問題設定">3.4.1　問題設定</h3>
-<p>ここでは、個人単位の感染有無を扱います。たとえば、検査陰性デザイン、症例対照研究、血清疫学調査、接触者調査などでは、個人ごとに感染あり/なし、ワクチン接種あり/なし、濃厚接触あり/なし、マスク着用、年齢などを扱います。</p>
-<p>$$
-y_i \sim \mathrm{Bernoulli}(p_i)
-$$</p>
-<p>$$
-\mathrm{logit}(p_i) = \alpha + X_i \beta
-$$</p>
-<h3 id="342サンプルデータ作成">3.4.2　サンプルデータ作成</h3>
-<pre><code class="language-r">set.seed(104)
+  <p>
+    <code>ili_z</code>のオッズ比が1より大きければ、ILI活動が高い週ほど検査陽性確率が高いことを示します。<code>vacc_z</code>のオッズ比が1より小さければ、接種率が高い週ほど陽性率が低い傾向を示します。ただし、これは集計データの関連であり、個人単位のワクチン有効性をそのまま意味しません。
+  </p>
+  <h2 id="34ロジスティック回帰">3.4　ロジスティック回帰</h2>
+  <h3 id="341問題設定">3.4.1　問題設定</h3>
+  <p>ここでは、個人単位の感染有無を扱います。たとえば、検査陰性デザイン、症例対照研究、血清疫学調査、接触者調査などでは、個人ごとに感染あり/なし、ワクチン接種あり/なし、濃厚接触あり/なし、マスク着用、年齢などを扱います。</p>
+  <p>$$
+    y_i \sim \mathrm{Bernoulli}(p_i)
+    $$</p>
+  <p>$$
+    \mathrm{logit}(p_i) = \alpha + X_i \beta
+    $$</p>
+  <h3 id="342サンプルデータ作成">3.4.2　サンプルデータ作成</h3>
+  <pre><code class="language-r">set.seed(104)
 
 N &lt;- 800
 
@@ -1146,8 +1334,8 @@ d4 &lt;- data.frame(
 head(d4)
 table(d4$infected)
 </code></pre>
-<h3 id="343stanコード">3.4.3　Stanコード</h3>
-<pre><code class="language-r">stan_code_bernoulli_logit &lt;- &quot;
+  <h3 id="343stanコード">3.4.3　Stanコード</h3>
+  <pre class="stan-code"><code class="language-r">stan_code_bernoulli_logit &lt;- &quot;
 data {
   int&lt;lower=1&gt; N;
   int&lt;lower=1&gt; K;
@@ -1185,8 +1373,8 @@ generated quantities {
 }
 &quot;
 </code></pre>
-<h3 id="344rstanで推定">3.4.4　RStanで推定</h3>
-<pre><code class="language-r">stan_data4 &lt;- list(
+  <h3 id="344rstanで推定">3.4.4　RStanで推定</h3>
+  <pre><code class="language-r">stan_data4 &lt;- list(
   N = nrow(d4),
   K = ncol(X4),
   X = X4,
@@ -1203,8 +1391,8 @@ fit4 &lt;- do.call(
 
 check_fit(fit4, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;odds_ratio&quot;))
 </code></pre>
-<h3 id="345オッズ比を名前付きで要約">3.4.5　オッズ比を名前付きで要約</h3>
-<pre><code class="language-r">post4 &lt;- rstan::extract(fit4)
+  <h3 id="345オッズ比を名前付きで要約">3.4.5　オッズ比を名前付きで要約</h3>
+  <pre><code class="language-r">post4 &lt;- rstan::extract(fit4)
 
 or_summary4 &lt;- apply(
   post4$odds_ratio,
@@ -1216,8 +1404,8 @@ or_summary4 &lt;- apply(
 colnames(or_summary4) &lt;- colnames(X4)
 or_summary4
 </code></pre>
-<h3 id="346モデルチェック">3.4.6　モデルチェック</h3>
-<pre><code class="language-r">p_mean4 &lt;- apply(post4$p, 2, mean)
+  <h3 id="346モデルチェック">3.4.6　モデルチェック</h3>
+  <pre><code class="language-r">p_mean4 &lt;- apply(post4$p, 2, mean)
 
 # 予測確率の分布
 hist(
@@ -1238,29 +1426,34 @@ bayesplot::ppc_stat(
 pred_class &lt;- ifelse(p_mean4 &gt; 0.5, 1, 0)
 mean(pred_class == d4$infected)
 </code></pre>
-<h3 id="347解釈">3.4.7　解釈</h3>
-<p><code>vaccinated</code>のオッズ比が1より小さければ、他の説明変数を調整した上で、接種者の感染オッズが低い傾向を示します。<code>household_exposure</code>のオッズ比が1より大きければ、同居内曝露が感染オッズを上げる傾向を示します。</p>
-<p>COVID-19ワクチン有効性解析では、症例患者と対照患者における接種有無を比較し、多変量ロジスティック回帰でオッズ比を推定し、ワクチン有効性を$(1 - \mathrm{adjusted\ OR}) \times 100\%$として計算する方法が用いられます。ベイズモデルでも、接種効果をワクチン有効性風に表すなら、事後ドローごとに次のように計算できます。</p>
-<pre><code class="language-r"># vaccinated列の位置
+  <h3 id="347解釈">3.4.7　解釈</h3>
+  <p>
+    <code>vaccinated</code>のオッズ比が1より小さければ、他の説明変数を調整した上で、接種者の感染オッズが低い傾向を示します。<code>household_exposure</code>のオッズ比が1より大きければ、同居内曝露が感染オッズを上げる傾向を示します。
+  </p>
+  <p>COVID-19ワクチン有効性解析では、症例患者と対照患者における接種有無を比較し、多変量ロジスティック回帰でオッズ比を推定し、ワクチン有効性を$(1 - \mathrm{adjusted\ OR}) \times
+    100\%$として計算する方法が用いられます。ベイズモデルでも、接種効果をワクチン有効性風に表すなら、事後ドローごとに次のように計算できます。</p>
+  <pre><code class="language-r"># vaccinated列の位置
 j_vacc &lt;- which(colnames(X4) == &quot;vaccinated&quot;)
 
 ve_draws &lt;- (1 - exp(post4$beta[, j_vacc])) * 100
 
 quantile(ve_draws, probs = c(0.025, 0.5, 0.975))
 </code></pre>
-<p>ただし、このVE風の値は、ここで作った単純なサンプルデータとモデルに対する計算です。実データでワクチン有効性を推定する場合は、研究デザイン、症例定義、検査陰性デザイン、交絡調整、カレンダー時間、地域、年齢、既感染、接種からの経過時間などを明示的に扱う必要があります。</p>
-<h2 id="35ポアソン回帰">3.5　ポアソン回帰</h2>
-<h3 id="351問題設定">3.5.1　問題設定</h3>
-<p>ポアソン回帰は、症例数、死亡数、入院数、アウトブレイク件数など、カウントデータを扱う基本モデルです。感染症疫学では、地域ごとの人口が異なるため、人口をオフセットとして入れ、症例数を率として解釈することがよくあります。</p>
-<p>$$
-y_n \sim \mathrm{Poisson}(\lambda_n)
-$$</p>
-<p>$$
-\log(\lambda_n) = \log(\mathrm{population}_n) + \alpha + X_n \beta
-$$</p>
-<p>ここで、$\log(\mathrm{population}_n)$はオフセットです。</p>
-<h3 id="352サンプルデータ作成">3.5.2　サンプルデータ作成</h3>
-<pre><code class="language-r">set.seed(105)
+  <p>
+    ただし、このVE風の値は、ここで作った単純なサンプルデータとモデルに対する計算です。実データでワクチン有効性を推定する場合は、研究デザイン、症例定義、検査陰性デザイン、交絡調整、カレンダー時間、地域、年齢、既感染、接種からの経過時間などを明示的に扱う必要があります。
+  </p>
+  <h2 id="35ポアソン回帰">3.5　ポアソン回帰</h2>
+  <h3 id="351問題設定">3.5.1　問題設定</h3>
+  <p>ポアソン回帰は、症例数、死亡数、入院数、アウトブレイク件数など、カウントデータを扱う基本モデルです。感染症疫学では、地域ごとの人口が異なるため、人口をオフセットとして入れ、症例数を率として解釈することがよくあります。</p>
+  <p>$$
+    y_n \sim \mathrm{Poisson}(\lambda_n)
+    $$</p>
+  <p>$$
+    \log(\lambda_n) = \log(\mathrm{population}_n) + \alpha + X_n \beta
+    $$</p>
+  <p>ここで、$\log(\mathrm{population}_n)$はオフセットです。</p>
+  <h3 id="352サンプルデータ作成">3.5.2　サンプルデータ作成</h3>
+  <pre><code class="language-r">set.seed(105)
 
 n_area &lt;- 20
 n_week &lt;- 8
@@ -1308,8 +1501,8 @@ d5$incidence_per_100k &lt;- d5$cases / d5$population * 100000
 head(d5)
 summary(d5$cases)
 </code></pre>
-<h3 id="353stanコード">3.5.3　Stanコード</h3>
-<pre><code class="language-r">stan_code_poisson_regression &lt;- &quot;
+  <h3 id="353stanコード">3.5.3　Stanコード</h3>
+  <pre class="stan-code"><code class="language-r">stan_code_poisson_regression &lt;- &quot;
 data {
   int&lt;lower=1&gt; N;
   int&lt;lower=1&gt; K;
@@ -1348,8 +1541,8 @@ generated quantities {
 }
 &quot;
 </code></pre>
-<h3 id="354rstanで推定">3.5.4　RStanで推定</h3>
-<pre><code class="language-r">stan_data5 &lt;- list(
+  <h3 id="354rstanで推定">3.5.4　RStanで推定</h3>
+  <pre><code class="language-r">stan_data5 &lt;- list(
   N = nrow(d5),
   K = ncol(X5),
   X = X5,
@@ -1367,8 +1560,8 @@ fit5 &lt;- do.call(
 
 check_fit(fit5, pars = c(&quot;alpha&quot;, &quot;beta&quot;, &quot;incidence_rate_ratio&quot;))
 </code></pre>
-<h3 id="355発生率比を要約する">3.5.5　発生率比を要約する</h3>
-<pre><code class="language-r">post5 &lt;- rstan::extract(fit5)
+  <h3 id="355発生率比を要約する">3.5.5　発生率比を要約する</h3>
+  <pre><code class="language-r">post5 &lt;- rstan::extract(fit5)
 
 irr_summary5 &lt;- apply(
   post5$incidence_rate_ratio,
@@ -1380,9 +1573,10 @@ irr_summary5 &lt;- apply(
 colnames(irr_summary5) &lt;- colnames(X5)
 irr_summary5
 </code></pre>
-<p><code>exp(beta)</code>は発生率比、つまりincidence rate ratioです。たとえば、<code>vacc_z</code>の発生率比が1より小さければ、ワクチン接種率が高い地域・週ほど、人口を調整した症例発生率が低い傾向を示します。</p>
-<h3 id="356モデルチェック">3.5.6　モデルチェック</h3>
-<pre><code class="language-r">lambda_mean5 &lt;- apply(post5$lambda, 2, mean)
+  <p><code>exp(beta)</code>は発生率比、つまりincidence rate
+    ratioです。たとえば、<code>vacc_z</code>の発生率比が1より小さければ、ワクチン接種率が高い地域・週ほど、人口を調整した症例発生率が低い傾向を示します。</p>
+  <h3 id="356モデルチェック">3.5.6　モデルチェック</h3>
+  <pre><code class="language-r">lambda_mean5 &lt;- apply(post5$lambda, 2, mean)
 
 plot(
   lambda_mean5,
@@ -1404,18 +1598,21 @@ bayesplot::ppc_stat(
   stat = &quot;sd&quot;
 )
 </code></pre>
-<p>ポアソンモデルでは、平均と分散が等しいという制約があります。感染症データでは、地域差、クラスター、報告遅れ、集団発生により過分散が出やすいため、<code>sd</code>の事後予測チェックが重要です。過分散が大きい場合は、負の二項回帰、地域ランダム効果、時間効果、階層モデルへの拡張を検討します。</p>
-<h2 id="36モデルチェックのまとめ">3.6　モデルチェックのまとめ</h2>
-<p>RStanで回帰モデルを推定したら、最低限、次を確認します。</p>
-<h3 id="361mcmc診断">3.6.1　MCMC診断</h3>
-<pre><code class="language-r">print(fit5)
+  <p>
+    ポアソンモデルでは、平均と分散が等しいという制約があります。感染症データでは、地域差、クラスター、報告遅れ、集団発生により過分散が出やすいため、<code>sd</code>の事後予測チェックが重要です。過分散が大きい場合は、負の二項回帰、地域ランダム効果、時間効果、階層モデルへの拡張を検討します。
+  </p>
+  <h2 id="36モデルチェックのまとめ">3.6　モデルチェックのまとめ</h2>
+  <p>RStanで回帰モデルを推定したら、最低限、次を確認します。</p>
+  <h3 id="361mcmc診断">3.6.1　MCMC診断</h3>
+  <pre><code class="language-r">print(fit5)
 rstan::check_hmc_diagnostics(fit5)
 traceplot(fit5, pars = c(&quot;alpha&quot;, &quot;beta[1]&quot;, &quot;beta[2]&quot;))
 </code></pre>
-<p>見るべきものは、R-hat、ESS、divergence、maximum treedepth、BFMIです。Stanの診断ガイドでは、警告の多くはモデル上の重要な問題を示しており、警告を見た場合は意味を理解するまで推定値をそのまま信頼すべきではないと説明されています。</p>
-<h3 id="362事後予測チェック">3.6.2　事後予測チェック</h3>
-<p>各モデルで<code>generated quantities</code>に<code>y_rep</code>を入れました。これにより、観測データとモデルから生成した複製データを比較できます。</p>
-<pre><code class="language-r">post &lt;- rstan::extract(fit5)
+  <p>見るべきものは、R-hat、ESS、divergence、maximum
+    treedepth、BFMIです。Stanの診断ガイドでは、警告の多くはモデル上の重要な問題を示しており、警告を見た場合は意味を理解するまで推定値をそのまま信頼すべきではないと説明されています。</p>
+  <h3 id="362事後予測チェック">3.6.2　事後予測チェック</h3>
+  <p>各モデルで<code>generated quantities</code>に<code>y_rep</code>を入れました。これにより、観測データとモデルから生成した複製データを比較できます。</p>
+  <pre><code class="language-r">post &lt;- rstan::extract(fit5)
 y_rep &lt;- post$y_rep
 
 bayesplot::ppc_stat(
@@ -1430,71 +1627,79 @@ bayesplot::ppc_stat(
   stat = &quot;sd&quot;
 )
 </code></pre>
-<p>もし元データを複製データの中から簡単に見分けられるなら、モデルに問題がある可能性があります。</p>
-<h3 id="363係数の解釈">3.6.3　係数の解釈</h3>
-<p>線形回帰では、係数はアウトカムのスケールで解釈します。</p>
-<pre><code class="language-r"># 線形回帰
+  <p>もし元データを複製データの中から簡単に見分けられるなら、モデルに問題がある可能性があります。</p>
+  <h3 id="363係数の解釈">3.6.3　係数の解釈</h3>
+  <p>線形回帰では、係数はアウトカムのスケールで解釈します。</p>
+  <pre><code class="language-r"># 線形回帰
 beta
 </code></pre>
-<p>ロジスティック回帰では、指数変換してオッズ比にします。</p>
-<pre><code class="language-r"># ロジスティック回帰
+  <p>ロジスティック回帰では、指数変換してオッズ比にします。</p>
+  <pre><code class="language-r"># ロジスティック回帰
 odds_ratio = exp(beta)
 </code></pre>
-<p>ポアソン回帰では、指数変換して発生率比にします。</p>
-<pre><code class="language-r"># ポアソン回帰
+  <p>ポアソン回帰では、指数変換して発生率比にします。</p>
+  <pre><code class="language-r"># ポアソン回帰
 incidence_rate_ratio = exp(beta)
 </code></pre>
-<h3 id="364感染症データで特に注意する点">3.6.4　感染症データで特に注意する点</h3>
-<p>感染症データでは、次の問題が頻繁に起こります。</p>
-<ul>
-<li>報告遅れ</li>
-<li>検査数の変化</li>
-<li>検査対象者の選択バイアス</li>
-<li>曜日効果</li>
-<li>季節性</li>
-<li>地域差</li>
-<li>年齢構成の違い</li>
-<li>変異株の交代</li>
-<li>ワクチン接種選択による交絡</li>
-<li>過分散</li>
-<li>ゼロ過剰</li>
-<li>時系列自己相関</li>
-</ul>
-<p>この章のモデルは基本形です。実務では、階層モデル、時系列モデル、負の二項回帰、曜日効果、地域ランダム効果、遅れ効果、測定誤差モデルなどへ拡張することが多くなります。</p>
-<h2 id="37補足と文献案内">3.7　補足と文献案内</h2>
-<h3 id="rstanstan公式資料">RStan・Stan公式資料</h3>
-<ul>
-<li><a href="https://mc-stan.org/rstan/reference/rstan.html">RStan Reference</a></li>
-<li><a href="https://mc-stan.org/rstan/reference/stan.html">RStan <code>stan()</code> Reference</a></li>
-<li><a href="https://mc-stan.org/rstan/reference/stanfit-class.html">RStan <code>stanfit</code> class</a></li>
-<li><a href="https://mc-stan.org/rstan/reference/check_hmc_diagnostics.html">RStan <code>check_hmc_diagnostics()</code></a></li>
-<li><a href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan Reference Manual: Program Blocks</a></li>
-<li><a href="https://mc-stan.org/docs/reference-manual/statements.html">Stan Reference Manual: Statements</a></li>
-<li><a href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan User's Guide: Regression Models</a></li>
-<li><a href="https://mc-stan.org/docs/stan-users-guide/posterior-predictive-checks.html">Stan User's Guide: Posterior Predictive Checks</a></li>
-<li><a href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan Diagnostics and Warnings</a></li>
-<li><a href="https://mc-stan.org/docs/functions-reference/binary_distributions.html">Stan Functions Reference: Binary Distributions</a></li>
-<li><a href="https://mc-stan.org/docs/functions-reference/bounded_discrete_distributions.html">Stan Functions Reference: Bounded Discrete Distributions</a></li>
-<li><a href="https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html">Stan Functions Reference: Unbounded Discrete Distributions</a></li>
-</ul>
-<h3 id="感染症分野の参考">感染症分野の参考</h3>
-<p>感染症監視データを例にするなら、下水監視、検査陽性率、症例数、入院数、ワクチン有効性評価のデータ構造を理解しておくと、Stanモデルに落とし込みやすくなります。</p>
-<ul>
-<li><a href="https://www.cdc.gov/wastewater/index.html">CDC Wastewater Surveillance</a></li>
-<li><a href="https://www.cdc.gov/respiratory-viruses/data/activity-levels.html">CDC Respiratory Viruses Data</a></li>
-<li><a href="https://www.cdc.gov/mmwr/">CDC MMWR: COVID-19 Vaccine Effectiveness examples</a></li>
-<li><a href="https://wwwnc.cdc.gov/eid/">CDC Emerging Infectious Diseases Journal</a></li>
-</ul>
-<h3 id="次に進むべき内容">次に進むべき内容</h3>
-<p>Chapter 3までで、RStanによる基本的な回帰モデルは実装できます。次に進むなら、感染症分野では特に次の拡張が重要です。</p>
-<ol>
-<li>負の二項回帰：症例数の過分散に対応する。</li>
-<li>階層モデル：地域差、施設差、年齢群差を扱う。</li>
-<li>時系列モデル：曜日効果、季節性、自己相関、報告遅れを扱う。</li>
-<li>遅れ効果モデル：曝露から発症、検査、報告までの遅延を扱う。</li>
-<li>測定誤差モデル：検査感度・特異度、下水濃度測定誤差を扱う。</li>
-<li>事後予測と意思決定：病床需要、アウトブレイク警戒、介入効果を評価する。</li>
-</ol>
+  <h3 id="364感染症データで特に注意する点">3.6.4　感染症データで特に注意する点</h3>
+  <p>感染症データでは、次の問題が頻繁に起こります。</p>
+  <ul>
+    <li>報告遅れ</li>
+    <li>検査数の変化</li>
+    <li>検査対象者の選択バイアス</li>
+    <li>曜日効果</li>
+    <li>季節性</li>
+    <li>地域差</li>
+    <li>年齢構成の違い</li>
+    <li>変異株の交代</li>
+    <li>ワクチン接種選択による交絡</li>
+    <li>過分散</li>
+    <li>ゼロ過剰</li>
+    <li>時系列自己相関</li>
+  </ul>
+  <p>この章のモデルは基本形です。実務では、階層モデル、時系列モデル、負の二項回帰、曜日効果、地域ランダム効果、遅れ効果、測定誤差モデルなどへ拡張することが多くなります。</p>
+  <h2 id="37補足と文献案内">3.7　補足と文献案内</h2>
+  <h3 id="rstanstan公式資料">RStan・Stan公式資料</h3>
+  <ul>
+    <li><a href="https://mc-stan.org/rstan/reference/rstan.html">RStan Reference</a></li>
+    <li><a href="https://mc-stan.org/rstan/reference/stan.html">RStan <code>stan()</code> Reference</a></li>
+    <li><a href="https://mc-stan.org/rstan/reference/stanfit-class.html">RStan <code>stanfit</code> class</a></li>
+    <li><a href="https://mc-stan.org/rstan/reference/check_hmc_diagnostics.html">RStan
+        <code>check_hmc_diagnostics()</code></a></li>
+    <li><a href="https://mc-stan.org/docs/reference-manual/blocks.html">Stan Reference Manual: Program Blocks</a></li>
+    <li><a href="https://mc-stan.org/docs/reference-manual/statements.html">Stan Reference Manual: Statements</a></li>
+    <li><a href="https://mc-stan.org/docs/stan-users-guide/regression.html">Stan User's Guide: Regression Models</a>
+    </li>
+    <li><a href="https://mc-stan.org/docs/stan-users-guide/posterior-predictive-checks.html">Stan User's Guide:
+        Posterior Predictive Checks</a></li>
+    <li><a href="https://mc-stan.org/learn-stan/diagnostics-warnings.html">Stan Diagnostics and Warnings</a></li>
+    <li><a href="https://mc-stan.org/docs/functions-reference/binary_distributions.html">Stan Functions Reference:
+        Binary Distributions</a></li>
+    <li><a href="https://mc-stan.org/docs/functions-reference/bounded_discrete_distributions.html">Stan Functions
+        Reference: Bounded Discrete Distributions</a></li>
+    <li><a href="https://mc-stan.org/docs/functions-reference/unbounded_discrete_distributions.html">Stan Functions
+        Reference: Unbounded Discrete Distributions</a></li>
+  </ul>
+  <h3 id="感染症分野の参考">感染症分野の参考</h3>
+  <p>感染症監視データを例にするなら、下水監視、検査陽性率、症例数、入院数、ワクチン有効性評価のデータ構造を理解しておくと、Stanモデルに落とし込みやすくなります。</p>
+  <ul>
+    <li><a href="https://www.cdc.gov/wastewater/index.html">CDC Wastewater Surveillance</a></li>
+    <li><a href="https://www.cdc.gov/respiratory-viruses/data/activity-levels.html">CDC Respiratory Viruses Data</a>
+    </li>
+    <li><a href="https://www.cdc.gov/mmwr/">CDC MMWR: COVID-19 Vaccine Effectiveness examples</a></li>
+    <li><a href="https://wwwnc.cdc.gov/eid/">CDC Emerging Infectious Diseases Journal</a></li>
+  </ul>
+  <h3 id="次に進むべき内容">次に進むべき内容</h3>
+  <p>Chapter 3までで、RStanによる基本的な回帰モデルは実装できます。次に進むなら、感染症分野では特に次の拡張が重要です。</p>
+  <ol>
+    <li>負の二項回帰：症例数の過分散に対応する。</li>
+    <li>階層モデル：地域差、施設差、年齢群差を扱う。</li>
+    <li>時系列モデル：曜日効果、季節性、自己相関、報告遅れを扱う。</li>
+    <li>遅れ効果モデル：曝露から発症、検査、報告までの遅延を扱う。</li>
+    <li>測定誤差モデル：検査感度・特異度、下水濃度測定誤差を扱う。</li>
+    <li>事後予測と意思決定：病床需要、アウトブレイク警戒、介入効果を評価する。</li>
+  </ol>
 
 </body>
+
 </html>
